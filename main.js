@@ -132,7 +132,8 @@ function display_timer() {
     if (c_count>0) {
         for (i=0;i<c_count;i++) {
             if (connections[c_count].conn != null) {
-                conn.send(timestring);
+                connections[c_count].conn.send(timestring);
+                console.log("sent");
             }    
         }        
     }
