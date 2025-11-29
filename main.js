@@ -3,6 +3,9 @@ var conn = null;
 var offset;
 var time = 0;
 var time_in_s;
+var count = 0;
+var loop1 = null;
+var loop2 = null;
 
 // receiver.html code below
        function initialize() {
@@ -153,10 +156,19 @@ function converttime(relativeclock) {
 
 function start_stopwatch() {
     offset = Date.now();
+    clearInterval(loop1);
+    clearInterval(loop2);
     loop1 = setInterval(update,500);
     loop2 = setInterval(display_timer,500);
 }
 
+function reset_stopwatch() {
+    clearInterval(loop1);
+    clearInterval(loop2);
+    document.getElementById("timer_display").innerHTML = "";
+}
+
 function testsend1() {
-    conn.send("Hello world");
+    count = count + 1;
+    conn.send("Hello world " + count);
 }
