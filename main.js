@@ -1,11 +1,13 @@
 var peer = null;
-var conn = null;
+var r_conn = null;
 var offset;
 var time = 0;
 var time_in_s;
 var count = 0;
 var loop1 = null;
 var loop2 = null;
+var connections = new Array();
+var c_count = -1;
 
 // receiver.html code below
        function initialize() {
@@ -29,19 +31,11 @@ var loop2 = null;
                         //status.innerHTML = "Awaiting connection...";
                     });
                     peer.on('connection', function (c) {
-                        // Allow only a single connection
-                        //if (conn && conn.open) {
-                        //    c.on('open', function() {
-                        //        c.send("Already connected to another client");
-                        //        setTimeout(function() { c.close(); }, 500);
-                        //    });
-                        //    return;
-                        //}
-
-                        conn = c;
-                        console.log("Connected to: " + conn.peer);
+                        c_count = connections.length;
+                        connections[c_count].conn = c;
+                        console.log("Connected to: " + connections[c_count].conn.peer);
                         document.getElementById("status").innerHTML = "Admin: Connected";
-                        ready();
+                        ready(c_count);
                     });
                     peer.on('disconnected', function () {
                         //status.innerHTML = "Connection lost. Please reconnect";
@@ -64,31 +58,31 @@ var loop2 = null;
                 };
 
 
-                function ready() {
-                    conn.on('data', function (data) {
+                function ready(c_count) {
+                    connections[c_count].conn.on('data', function (data) {
                         console.log("Data recieved");
                         document.getElementById("message").innerHTML = data;
                     });
-                    conn.on('close', function () {
+                    connections[c_count].conn.on('close', function () {
                         //status.innerHTML = "Connection reset<br>Awaiting connection...";
-                        conn = null;
+                        connections[c_count].conn = null;
                     });
                 }
 //from send html
                 function join(inputvalue) {
                     // Close old connection
-                    if (conn) {
-                        conn.close();
+                    if (r_conn) {
+                        r_conn.close();
                     }
 
                     // Create connection to destination peer specified in the input field
-                    conn = peer.connect(inputvalue, {
+                    r_conn = peer.connect(inputvalue, {
                         reliable: true
                     });
 
-                    conn.on('open', function () {
+                    r_conn.on('open', function () {
                         document.getElementById("status").innerHTML = "Listener: connected to peer";
-                        console.log("Connected to: " + conn.peer);
+                        console.log("Connected to: " + r_conn.peer);
 
                         // Check URL params for comamnds that should be sent immediately
                         //var command = getUrlParam("command");
@@ -96,11 +90,11 @@ var loop2 = null;
                         //    conn.send(command);
                     });
                     // Handle incoming data (messages only since this is the signal sender)
-                    conn.on('data', function (data) {
+                    r_conn.on('data', function (data) {
                         //addMessage("<span class=\"peerMsg\">Peer:</span> " + data);
                         document.getElementById("message").innerHTML = data;
                     });
-                    conn.on('close', function () {
+                    r_conn.on('close', function () {
                         //status.innerHTML = "Connection closed";
                     });
                 };
@@ -134,8 +128,12 @@ function update() {
 function display_timer() {
     timestring = converttime(2*60 - Math.floor(time_in_s));
     document.getElementById("timer_display").innerHTML = timestring;
-    if (conn != null) {
-        conn.send(timestring);
+    if (c_count>0) {
+        for (i=0;i<c_count;i++) {
+            if (connections[c_count].conn != null) {
+                conn.send(timestring);
+            }    
+        }        
     }
 }
 
@@ -170,5 +168,5 @@ function reset_stopwatch() {
 
 function testsend1() {
     count = count + 1;
-    conn.send("Hello world " + count);
+    r_conn.send("Hello world " + count);
 }
