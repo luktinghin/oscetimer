@@ -63,7 +63,7 @@ var c_count = -1;
                     //admin receives data channel
                     connections[c_count].conn.on('data', function (data) {
                         console.log("Data received from peer " + connections[c_count].conn.peer);
-                        document.getElementById("message").innerHTML = "Peer " c_count + " says: " data;
+                        document.getElementById("message").innerHTML = "Peer " + c_count + " says: " + data;
                     });
                     connections[c_count].conn.on('close', function () {
                         //status.innerHTML = "Connection reset<br>Awaiting connection...";
