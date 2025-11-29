@@ -31,7 +31,7 @@ var c_count = -1;
                         //status.innerHTML = "Awaiting connection...";
                     });
                     peer.on('connection', function (c) {
-                        c_count = connections.length;
+                        c_count = c_count+1;
                         connections[c_count] = {};
                         connections[c_count].conn = c;
                         console.log("Connected to: " + connections[c_count].conn.peer);
@@ -129,10 +129,10 @@ function update() {
 function display_timer() {
     timestring = converttime(2*60 - Math.floor(time_in_s));
     document.getElementById("timer_display").innerHTML = timestring;
-    if (c_count>0) {
-        for (i=0;i<c_count;i++) {
-            if (connections[c_count].conn != null) {
-                connections[c_count].conn.send(timestring);
+    if (c_count>=0) {
+        for (i=0;i<connections.length;i++) {
+            if (connections[i].conn != null) {
+                connections[i].conn.send(timestring);
                 console.log("sent");
             }    
         }        
