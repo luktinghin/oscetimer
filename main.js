@@ -35,7 +35,7 @@ var c_count = -1;
                         connections[c_count] = {};
                         connections[c_count].conn = c;
                         console.log("Connected to: " + connections[c_count].conn.peer);
-                        document.getElementById("status").innerHTML = "Admin: Connected";
+                        document.getElementById("status").innerHTML = "Admin: Connected to " + c_count + " peers";
                         ready(c_count);
                     });
                     peer.on('disconnected', function () {
@@ -60,9 +60,10 @@ var c_count = -1;
 
 
                 function ready(c_count) {
+                    //admin receives data channel
                     connections[c_count].conn.on('data', function (data) {
-                        console.log("Data recieved");
-                        document.getElementById("message").innerHTML = data;
+                        console.log("Data received from peer " + connections[c_count].conn.peer);
+                        document.getElementById("message").innerHTML = "Peer " c_count + " says: " data;
                     });
                     connections[c_count].conn.on('close', function () {
                         //status.innerHTML = "Connection reset<br>Awaiting connection...";
@@ -127,8 +128,14 @@ function update() {
 }
 
 function display_timer() {
-    timestring = converttime(2*60 - Math.floor(time_in_s));
-    document.getElementById("timer_display").innerHTML = timestring;
+    timer_time = 2*60 - Math.floor(time_in_s)
+    if (timer_time >= 0) {
+        timestring = converttime(timer_time);
+        document.getElementById("timer_display").innerHTML = timestring;
+    } else {
+        timestring = "Admin timer has reached zero.";
+        document.getElementById("timer_display").innerHTML = "Time's up!";
+    }
     if (c_count>=0) {
         for (i=0;i<connections.length;i++) {
             if (connections[i].conn != null) {
