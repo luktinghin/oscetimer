@@ -32,6 +32,7 @@ var c_count = -1;
                     });
                     peer.on('connection', function (c) {
                         c_count = connections.length;
+                        connections[c_count] = {};
                         connections[c_count].conn = c;
                         console.log("Connected to: " + connections[c_count].conn.peer);
                         document.getElementById("status").innerHTML = "Admin: Connected";
