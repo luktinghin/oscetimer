@@ -35,7 +35,8 @@ var c_count = -1;
                         connections[c_count] = {};
                         connections[c_count].conn = c;
                         console.log("Connected to: " + connections[c_count].conn.peer);
-                        document.getElementById("status").innerHTML = "Admin: Connected to " + c_count + " peers";
+                        count_string = c_count + 1;
+                        document.getElementById("status").innerHTML = "Admin: Connected to " + count_string + " peers";
                         ready(c_count);
                     });
                     peer.on('disconnected', function () {
