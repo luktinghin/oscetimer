@@ -40,7 +40,7 @@ var loop2 = null;
 
                         conn = c;
                         console.log("Connected to: " + conn.peer);
-                        //status.innerHTML = "Connected";
+                        document.getElementById("status").innerHTML = "Admin: Connected";
                         ready();
                     });
                     peer.on('disconnected', function () {
@@ -87,7 +87,7 @@ var loop2 = null;
                     });
 
                     conn.on('open', function () {
-                        //status.innerHTML = "Connected to: " + conn.peer;
+                        document.getElementById("status").innerHTML = "Listener: connected to peer";
                         console.log("Connected to: " + conn.peer);
 
                         // Check URL params for comamnds that should be sent immediately
@@ -110,9 +110,11 @@ function init(value) {
     if (value == 0) {
         document.getElementById("page_admin").style.display = "block";
         document.getElementById("page_start").style.display = "none";
+        document.getElementById("status").innerHTML = "Admin: await connection";
     } else {
         document.getElementById("page_receiver").style.display = "block";
         document.getElementById("page_start").style.display = "none";
+        document.getElementById("status").innerHTML = "Listener: await connection";
     }
 }
 
@@ -127,8 +129,6 @@ function update() {
     time += (now - offset) *1;
     offset = now;
     time_in_s = time/1000;
-    console.log(now);
-    console.log(time);
 }
 
 function display_timer() {
@@ -136,7 +136,6 @@ function display_timer() {
     document.getElementById("timer_display").innerHTML = timestring;
     if (conn != null) {
         conn.send(timestring);
-        console.log("sent");
     }
 }
 
@@ -163,6 +162,7 @@ function start_stopwatch() {
 }
 
 function reset_stopwatch() {
+    time = 0;
     clearInterval(loop1);
     clearInterval(loop2);
     document.getElementById("timer_display").innerHTML = "";
