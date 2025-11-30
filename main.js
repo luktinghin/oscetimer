@@ -111,7 +111,7 @@ temporal.paused = false;
                             temporal.distance = str * 1;
                             temporal.destination = temporal.distance + Date.now();
                             receiver_sync(temporal.distance);
-                            console.log(temporal);
+                            //console.log(temporal);
                             addMessage("Timer distance is " + converttime(Math.floor(temporal.distance/1000)),"Debug");
                         } else if (data.slice(0,2) == "CM") {
                             //command
@@ -240,11 +240,15 @@ function receiver_pause() {
     pause_action();
 }
 
+function receiver_reset() {
+    reset_action();
+}
+
 function receiver_parsecommand(param) {
     if (param == "pause") {
         receiver_pause();
     } else if (param == "reset") {
-
+        receiver_reset();
     } else if (param == "requestsync") {
         //this is received from receiver requesting sync
         sender_sync();
@@ -383,11 +387,18 @@ function pause_action() {
 }
 
 function reset_stopwatch() {
+    reset_action();
+        if (connections.length>0) {
+            sender_command("reset");
+        }
+}
+
+function reset_action() {
     time = 0;
     clearInterval(loop1);
     clearInterval(loop2);
     document.getElementById("timer_display").innerHTML = "";
-    document.getElementById("timer_status").innerHTML = "Countdown is stopped.";
+    document.getElementById("timer_status").innerHTML = "Countdown is stopped.";    
 }
 
 function testsend1() {
