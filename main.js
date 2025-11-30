@@ -239,6 +239,8 @@ function loadURL() {
     const queryString = window.location.search;
     if (queryString == "") {
         console.log('no URL params detected');
+        document.getElementById("status").innerHTML = "Welcome!";
+        document.getElementById("page_start").style.opacity = "1";
     } else {
         const urlParams = new URLSearchParams(queryString);
         const inputString = urlParams.get("U");
