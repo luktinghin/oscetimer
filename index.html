@@ -49,12 +49,12 @@
 					<option value="2">2min</option>
 					<option value="3">3min</option>
 					<option value="4">4min</option>
-					<option value="5" selected>5min</option>
+					<option value="5">5min</option>
 					<option value="6">6min</option>
 					<option value="7">7min</option>
 					<option value="8">8min</option>
 					<option value="9">9min</option>
-					<option value="10">10min</option>
+					<option value="10" selected>10min</option>
 					<option value="15">15min</option>
 					<option value="20">20min</option>
 					<option value="25">25min</option>
@@ -70,16 +70,17 @@
 
 				<div>
 					<a class="button tinybutton" onclick="start_stopwatch()">Start Timer</a>
+					<a class="button tinybutton" onclick="pause_stopwatch()">Pause Timer</a>
 					<a class="button tinybutton" onclick="reset_stopwatch()">Reset timer</a>
 				</div>
 			</div>
 		</div>
 		<div id="page_receiver">
 			<div class="section line" id="page_receiver_1">
-				<div>Enter broadcaster ID</div>
+				<div>Enter host ID manually:</div>
 				<div>
 					<input id="senderID">
-					<button id="submitID" onclick="init_receiver()">submit</button>
+					<a class="button tinybutton" id="submitID" onclick="init_receiver()">Submit</a>
 				</div>
 			</div>
 			<div class="section line" id="page_receiver_2" style="display:none">
@@ -91,7 +92,7 @@
 		</div>
 		<div class="" id="div_timer">
 			<div id="div_timer_inner">
-				<div>Countdown timer:</div>
+				<div id="timer_status">Countdown is running:</div>
 				<div id="timer_display"></div>
 			</div>
 		</div>

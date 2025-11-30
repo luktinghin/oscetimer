@@ -10,6 +10,8 @@ var connections = new Array();
 var c_count = -1;
 var temporal = {};
 temporal.distance = 0;
+temporal.firstrun = -1;
+temporal.paused = false;
 
 // receiver.html code below
        function initialize() {
@@ -128,6 +130,7 @@ temporal.distance = 0;
 
 
 function init(value) {
+    document.getElementById("status").style.display = "block";
     if (value == 0) {
         document.getElementById("page_admin").style.display = "block";
         document.getElementById("page_start").style.display = "none";
@@ -159,11 +162,15 @@ function init_receiver() {
     join(inputvalue);
 }
 
-function update() {
+function update() { //OBSOLETE
     now = Date.now();
     time += (now - offset) *1;
     offset = now;
     time_in_s = time/1000;
+}
+
+function periodic_sync() {
+    sender_sync();
 }
 
 function display_timer() {
@@ -247,6 +254,7 @@ function loadURL() {
         console.log('no URL params detected');
         document.getElementById("status").innerHTML = "Welcome!";
         document.getElementById("page_start").style.opacity = "1";
+        document.getElementById("status").style.display = "none";
     } else {
         const urlParams = new URLSearchParams(queryString);
         const inputString = urlParams.get("U");
@@ -271,7 +279,7 @@ function copyfunction2(is_link) {
 
 async function sharefunction(param) {
     //receives user id
-    url = "http://timersync.netlify.app/?U=" + param;
+    url = "http://oscetimer.app/?U=" + param;
     try {
         await navigator.share({url:url});
     } catch(err) {
@@ -283,7 +291,7 @@ async function sharefunction(param) {
 function copyfunction(param,is_link) {
     var textarea = document.createElement("textarea");
     if (is_link) {
-        str = "http://timersync.netlify.app/?U=" + param;    
+        str = "http://oscetimer.app/?U=" + param;    
     } else {
         str = param;
     }
@@ -311,25 +319,56 @@ function copyfunction(param,is_link) {
 }
 
 function start_stopwatch(distance) {
+    temporal.firstrun = 0;
     document.getElementById("div_timer").style.display = "flex";
     offset = Date.now();
     console.log(offset);
-    if (distance == undefined) {
-        dur = document.getElementById("select_timer").value * 60 * 1000;
-        temporal.destination = dur + offset;
+    document.getElementById("timer_status").innerHTML = "Countdown is running:";
+    document.getElementById("timer_status").classList.remove("pause");
+    document.getElementById("timer_display").classList.remove("pause");
+    if (temporal.paused == false) {
+        if (distance == undefined) {
+            dur = document.getElementById("select_timer").value * 60 * 1000;
+            temporal.destination = dur + offset;
+        } else {
+            temporal.destination = distance + offset;
+        }
+        console.log(temporal.destination);
+        update();
+        display_timer();
+        clearInterval(loop1);
+        clearInterval(loop2);
+        loop1 = setInterval(periodic_sync,2000);
+        loop2 = setInterval(display_timer,100);
+        if (connections.length>0) {
+            sender_sync();
+        }
     } else {
-        temporal.destination = distance + offset;
+        pausedur = Date.now() - temporal.pausefrom;
+        temporal.destination = temporal.destination + pausedur;
+        console.log(temporal.destination);
+        update();
+        display_timer();
+        clearInterval(loop1);
+        clearInterval(loop2);
+        loop1 = setInterval(periodic_sync,2000);
+        loop2 = setInterval(display_timer,100);
+        if (connections.length>0) {
+            sender_sync();
+        }
+        temporal.paused = false;
+        temporal.pausefrom = 0;
     }
-    console.log(temporal.destination);
-    update();
-    display_timer();
-    //clearInterval(loop1);
+}
+
+function pause_stopwatch() {
+    temporal.paused = true;
+    temporal.pausefrom = Date.now();
+    clearInterval(loop1);
     clearInterval(loop2);
-    //loop1 = setInterval(update,500);
-    loop2 = setInterval(display_timer,100);
-    if (connections.length>0) {
-        sender_sync();
-    }
+    document.getElementById("timer_status").innerHTML = "Countdown is PAUSED.";
+    document.getElementById("timer_status").classList.add("pause");
+    document.getElementById("timer_display").classList.add("pause");
 }
 
 function reset_stopwatch() {
@@ -337,6 +376,7 @@ function reset_stopwatch() {
     clearInterval(loop1);
     clearInterval(loop2);
     document.getElementById("timer_display").innerHTML = "";
+    document.getElementById("timer_status").innerHTML = "Countdown is stopped.";
 }
 
 function testsend1() {

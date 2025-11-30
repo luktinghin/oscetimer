@@ -126,6 +126,27 @@ select:focus {
 }
 
 
+input[type=number] {
+  color: #fff;
+  background: #303030;
+}
+
+input {
+  color: #fff;
+  background: #222; 
+  position:relative;
+  height: 30px; margin: 2px 4px 2px 0px; 
+  padding:2px;
+  /*padding-right:20px;*/
+  vertical-align:middle;
+  border:1px solid #555;
+  outline: none;
+  text-align:center;
+  -moz-appearance:textfield;
+  border-radius:4px;
+}
+
+
 h1 {
   color: white;
   font-size: 3rem;
@@ -355,7 +376,14 @@ a.button.tinybutton > i {
 #timer_display {
 	font-size:3rem;
 	font-weight:bold;
+}
 
+#timer_display.pause {
+  opacity:0.5;
+}
+
+#timer_status.pause {
+  color:red;
 }
 
 @media (max-width:599px) {
@@ -366,4 +394,8 @@ a.button.tinybutton > i {
 	h1 {
 		font-size:2.2rem;
 	}
+  h2, h3 {
+    padding:5px 0;
+    margin:5px 0;
+  }
 }
