@@ -142,7 +142,7 @@ function init(value) {
             //load from ext URL
             document.getElementById("page_receiver_1").style.display = "none";
             document.getElementById("page_receiver_2").style.display = "block";
-            document.getElementById("page_receiver_msg").innerHTML = r_conn.peer;
+            document.getElementById("page_receiver_msg").innerHTML = "Host admin: " + r_conn.peer;
         }
     }
 }
