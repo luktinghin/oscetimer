@@ -1,6 +1,254 @@
+@font-face {
+  font-family: Brandon Text;
+  src: url(fonts/BrandonText-Bold.otf);
+  font-weight: bold;
+  font-display: swap;
+  unicode-range:  U+000-5FF;
+}
+@font-face {
+   font-family: SourceSans;
+   src: url(fonts/SourceSans3-Regular.otf.woff2);
+   font-display: swap;
+   unicode-range: U+000-5FF;
+}
+
+@font-face {
+   font-family: SourceSans;
+   src: url(fonts/SourceSans3-Bold.otf.woff2);
+   font-weight: bold;
+   font-display: swap;
+   unicode-range: U+000-5FF;
+}
+
+@font-face {
+   font-family: SourceSans;
+   src: url(fonts/SourceSans3-It.otf.woff2);
+   font-style: italic;
+   font-display: swap;
+   unicode-range: U+000-5FF;
+}
+
+@font-face {
+   font-family: SourceSans;
+   src: url(fonts/SourceSans3-BoldIt.otf.woff2);
+   font-weight: bold;
+   font-style: italic;
+   font-display: swap;
+   unicode-range: U+000-5FF;
+}
+
+* {
+   -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+           box-sizing: border-box;
+           /*
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+          */
+          
+}
+
+html {
+  -webkit-text-size-adjust:100%; /*fix iphone landscape font-size 20px bug */
+  overscroll-behavior: none;
+}
+
+body {
+  font-family:  "SourceSans", "Avenir", "Calibri", "Trebuchet MS", "Lucida Sans", sans-serif;
+  font-size: 16px; 
+  margin: 0px;
+  background:#222;
+  overscroll-behavior-y: contain;
+}
+
+
+/* block to prevent pinch zoom and overscroll (pull down to refresh in iOS)*/
+/* prevent pull-to-refresh for Safari 16+ */
+@media screen and (pointer: coarse) {
+  @supports (-webkit-backdrop-filter: blur(1px)) and (overscroll-behavior-y: none)  {
+    html {
+      min-height: 100.3%;
+      overscroll-behavior-y: none;
+    }
+  }
+}
+/* prevent pull-to-refresh for Safari 9~15 */
+@media screen and (pointer: coarse) {
+  @supports (-webkit-backdrop-filter: blur(1px)) and (not (overscroll-behavior-y: none))  {
+    html {
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      margin: 0px;
+      max-height: 100%; /* or `height: calc(100% - 16px);` if body has default margin */
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    /* in this case to disable pinch-zoom, set `touch-action: pan-x pan-y;` on `body` instead of `html` */
+  }
+}
+
+/* prevent pinch-zoom for Chrome 36+, Safari 13+ */
+html {
+  touch-action: pan-x pan-y;
+  min-height: 100%; /* prevent pinch-zoom at page bottom */
+}
+
+/* prevent pull-to-refresh for Chrome 63+ */
+body{
+  overscroll-behavior-y: none;
+}
+
+/* end of pinch zoom pull to refresh block */
+
+button, select, input {
+  font-family:  "SourceSans", "Avenir", "Calibri", "Trebuchet MS", "Lucida Sans", sans-serif;
+}
+
+/*buttons */
+a.button {
+  border-radius:2em;
+  min-width:100px;
+  text-align:center;
+  border:1px solid #198964;
+  display:inline-block;
+  transition: all 0.2s ease;
+  color:#198964;
+  background-color:white;
+  text-decoration:none;
+  font-weight:bold;
+  padding:5px;
+  margin-right:5px;
+  outline:0;
+  cursor:pointer;
+}
+a.button.invert {
+  background:#198964;
+  color:white;
+}
+a.button.custom {
+  min-width:50px;
+}
+a.button.wide {
+  min-width:45%;
+}
+a.button.huge {
+  width:90%;
+  font-size:130%;
+  color:#555;
+  background:#eee;
+  padding-left:10px;
+  border-radius:6px;
+  text-align:left;
+  border:2px solid #ccc;
+  margin:0.7rem 0rem 0.7rem 0rem;
+}
+a.button.huge > i {
+  float:right;
+  padding-right:5px;
+  font-size: 28px;
+}
+a.button.huge:hover, a.button.huge:active {
+  color:#eee;
+  background:#555;
+  border-color:#555;
+}
+a.button.disabled {
+  border-color:rgb(220,220,220);
+  color:rgb(190,190,190);
+  background-color:rgb(240,240,240);
+}
+a.button.bolus {
+  padding:2px;
+  background: linear-gradient(0deg, rgba(255,255,255,1) 55%, rgba(90,90,90,1) 55%, rgba(240,240,240,1) 56%);
+  min-width: 85px;
+}
+a.button:hover, a.button:active {
+  background:#198964;
+  color:white;
+}
+a.button.muted {
+  /*border-color:rgb(155, 201, 157);
+  color:rgb(155, 201, 157);*/
+  border-color: rgba(128,128,128,0.5);
+  color: rgba(128,128,128,0.8);
+  min-width: 0px;
+  padding-left: 15px; padding-right: 15px;
+}
+
+.right {
+  float:right;
+}
+a.button.invert:hover, a.button.invert:active {
+  color:#198964;
+  background-color:white;
+}
+a.button.muted:hover, a.button.muted:active {
+  /*border-color:#4CAF50;*/
+  /*background-color:rgb(155, 201, 157);*/
+  background-color: rgba(128,128,128,0.5);
+  color:white;
+}
+a.button.disabled:hover, a.button.disabled:active {
+  border-color:rgb(220,220,220);
+  color:rgb(190,190,190);
+  background-color:rgb(240,240,240);
+  cursor:not-allowed;
+  pointer-events: none;
+}
+
+#main-body {
+	color:#eee;
+}
+
+#status {
+	padding:10px;
+	border-bottom: 3px solid #198964;
+}
+
 #page_admin {
 	display:none;
+	margin:10px;
+	padding:10px;
+	background: #303030;
+	border: 1px solid #555;
+	border-radius:16px;
 }
+
 #page_receiver {
-	display:none
+	display:none;
+	margin:10px;
+	padding:10px;
+	background: #303030;
+	border: 1px solid #555;
+	border-radius:16px;
+}
+
+.section {
+	padding:10px 0;
+}
+
+.section.line {
+	border-bottom: 1px solid #555;
+}
+
+#div_timer {
+	display:none;
+	margin:10px;
+	padding:10px;
+	background: #303030;
+	border: 1px solid #555;
+	border-radius:16px;
+	background:#eee;
+	color:black;
+	text-align:center;
+}
+
+#timer_display {
+	font-size:3rem;
+	font-weight:bold;
+
 }

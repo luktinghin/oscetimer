@@ -2,40 +2,74 @@
 <html lang="en">
 <head>
 	<link rel="stylesheet" href="styles.css">
+	<link href="css/fontawesome.min.css" rel="stylesheet"> 
+	<link href="css/regular.min.css" rel="stylesheet"> 
+	<link href="css/solid.min.css" rel="stylesheet">
+	<link href="css/brands.min.css" rel="stylesheet"> <!--font awesome-->
+	<meta name="theme-color" content="#303030">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <meta charset="utf-8">
+	<meta name="description" content="OSCE Timer">
+    <meta name="keywords" content="OSCE Timer">
+    <meta name="author" content="">
+    <title>OSCE Timer - A synchronized timer based on WebRTC</title>
 </head>
 <body>
-	<div id="status">
-		WELCOME!
-	</div>
-	<div id="page_start">
-		<div>Enter your role</div>
-		<button onclick="init(0)">Admin (Broadcaster)</button>
-		<button onclick="init(1)">Listener (Receiver)</button>
-	</div>
-	<div id="page_admin">
-		<div>My ID: </div>
-		<div id="ownID"></div>
-		<div>
-			<button onclick="start_stopwatch()">Start Timer</button>
-			<button onclick="reset_stopwatch()">Reset timer</button>
+	<div id="main-body">
+		<div id="status">
+			WELCOME!
 		</div>
-		<div>
-			<div>Timer display (origin: 2mins) :</div>
-			<div id="timer_display"></div>
+		<div id="page_start">
+			<div>Enter your role</div>
+			<button onclick="init(0)">Admin</button>
+			<button onclick="init(1)">Listener</button>
 		</div>
-	</div>
-	<div id="page_receiver">
-		<div>Enter broadcaster ID</div>
-		<div>
-			<input id="senderID">
-			<button id="submitID" onclick="init_receiver()">submit</button>
+		<div id="page_admin">
+			<div class="section line" id="div_iddisplay">
+				<div>My ID: </div>
+				<div id="ownID"></div>
+				<div>
+					<button onclick="sharefunction2()">Share link</button>
+					<button onclick="copyfunction2(true)">Copy link</button>
+					<button onclick="copyfunction2(false)">Copy ID</button>
+				</div>
+			</div>
+			<div class="section">
+				<div>Select countdown duration:</div>
+				<select id="select_timer">
+					<option value="1">1min</option>
+					<option value="2">2min</option>
+					<option value="3">3min</option>
+					<option value="4">4min</option>
+					<option value="5" selected>5min</option>
+					<option value="6">6min</option>
+					<option value="7">7min</option>
+					<option value="8">8min</option>
+					<option value="9">9min</option>
+					<option value="10">10min</option>
+				</select>
+				<div>
+					<button onclick="start_stopwatch()">Start Timer</button>
+					<button onclick="reset_stopwatch()">Reset timer</button>
+				</div>
+			</div>
 		</div>
-		<button id="sendbutton1" onclick="testsend1();">Send Message 1</button>
-	</div>
-	<div>---Message zone---</div>
-		<div id="message">
+		<div id="page_receiver">
+			<div>Enter broadcaster ID</div>
+			<div>
+				<input id="senderID">
+				<button id="submitID" onclick="init_receiver()">submit</button>
+			</div>
+			<button id="sendbutton1" onclick="testsend1();">Send Message 1</button>
 		</div>
-
+		<div class="" id="div_timer">
+				<div>Countdown timer:</div>
+				<div id="timer_display"></div>
+		</div>
+		<div>---Message zone---</div>
+			<div id="message">
+			</div>
+	</div><!-- close main body-->
 </body>
 <script src="main.js"></script>
 <script src="https://unpkg.com/peerjs@1.5.0/dist/peerjs.min.js"></script>
