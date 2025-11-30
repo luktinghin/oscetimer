@@ -222,7 +222,7 @@ function sender_command(param) {
     }
 }
 
-function sender_sendmsg(param) {
+function sender_msg(param) {
     if (connections.length>0) {
         connections.forEach((el) => {
             if (el.conn != null) {
@@ -236,9 +236,13 @@ function receiver_sync(distance) {
     start_stopwatch(distance);
 }
 
+function receiver_pause() {
+    pause_action();
+}
+
 function receiver_parsecommand(param) {
     if (param == "pause") {
-
+        receiver_pause();
     } else if (param == "reset") {
 
     } else if (param == "requestsync") {
@@ -362,6 +366,13 @@ function start_stopwatch(distance) {
 }
 
 function pause_stopwatch() {
+    pause_action();
+        if (connections.length>0) {
+            sender_command("pause");
+        }
+}
+
+function pause_action() {
     temporal.paused = true;
     temporal.pausefrom = Date.now();
     clearInterval(loop1);
