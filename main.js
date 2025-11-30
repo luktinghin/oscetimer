@@ -351,7 +351,7 @@ function start_stopwatch(distance) {
         display_timer();
         clearInterval(loop1);
         clearInterval(loop2);
-        loop1 = setInterval(periodic_sync,2000);
+        loop1 = setInterval(periodic_sync,10000);
         loop2 = setInterval(display_timer,100);
         if (connections.length>0) {
             sender_sync();
