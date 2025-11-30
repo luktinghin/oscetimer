@@ -124,7 +124,7 @@ temporal.paused = false;
                         
                     });
                     r_conn.on('close', function () {
-                        //status.innerHTML = "Connection closed";
+                        addMessage("Connection is lost");
                     });
                 };
 
