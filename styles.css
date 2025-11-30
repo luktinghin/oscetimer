@@ -108,6 +108,38 @@ button, select, input {
   font-family:  "SourceSans", "Avenir", "Calibri", "Trebuchet MS", "Lucida Sans", sans-serif;
 }
 
+h1 {
+  color: white;
+  font-size: 3rem;
+  font-weight: bold;
+  font-family: "Brandon Text", "Avenir", "SourceSans", "Calibri", "Trebuchet MS", "Lucida Sans", sans-serif;
+  border-bottom: 10px solid transparent;
+  border-image: linear-gradient(90deg, #198964 , transparent);
+  border-image-slice: 1;
+}
+
+h2 {
+  font-family: "Brandon Text", "Avenir", "SourceSans", "Calibri", "Trebuchet MS", "Lucida Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: bold;
+  font-style: italic;
+  color: #ddd;
+}
+
+h3 {
+  font-size: 1rem;
+  font-weight: normal;
+  color:#ddd;
+}
+
+h4 {
+  font-size: 1rem;
+  font-weight: bold;
+  font-style: italic;
+  color: #198964;
+  background: #eee;
+}
+
 /*buttons */
 a.button {
   border-radius:2em;
@@ -200,6 +232,23 @@ a.button.disabled:hover, a.button.disabled:active {
   pointer-events: none;
 }
 
+a.button.tinybutton {
+  color: rgba(128,128,128,1);
+  border-color: rgba(128,128,128,0.15);
+  font-size: 90%;
+  padding: 2px 15px 2px 15px;
+  margin-right: 0;
+  margin-bottom: 6px;
+}
+a.button.tinybutton:hover, a.button.tinybutton:active {
+  background-color: rgba(128,128,128,0.15);
+  border-color: rgba(128,128,128,0.5);
+  color:#eee;
+}
+a.button.tinybutton > i {
+  padding-right: 3px;
+}
+
 #main-body {
 	color:#eee;
 }
@@ -209,6 +258,32 @@ a.button.disabled:hover, a.button.disabled:active {
 	border-bottom: 3px solid #198964;
 }
 
+#page_msg {
+	display:none;
+    height: 150px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    border-top: 1px solid #198964;
+    background: black;
+    color: #666;
+    font-size: 0.8rem;
+    overflow-y: scroll;
+}
+
+#page_start {
+	display: flex;
+	justify-content:center;
+	align-items:center;
+	height:90vh;
+}
+
+#page_start_inner {
+	padding:20px;
+	width:65%;
+	color:#999;
+}
+
 #page_admin {
 	display:none;
 	margin:10px;
@@ -216,6 +291,8 @@ a.button.disabled:hover, a.button.disabled:active {
 	background: #303030;
 	border: 1px solid #555;
 	border-radius:16px;
+	max-height:20vh;
+	overflow-y:auto;
 }
 
 #page_receiver {
@@ -237,6 +314,15 @@ a.button.disabled:hover, a.button.disabled:active {
 
 #div_timer {
 	display:none;
+	justify-content:center;
+	align-items:center;
+	height:40vh;
+	flex-direction:column;
+}
+
+#div_timer_inner {
+	width:70%;
+	height:auto;
 	margin:10px;
 	padding:10px;
 	background: #303030;
@@ -251,4 +337,14 @@ a.button.disabled:hover, a.button.disabled:active {
 	font-size:3rem;
 	font-weight:bold;
 
+}
+
+@media (max-width:599px) {
+	#page_start_inner {
+		width:95%;
+		font-size:0.9rem;
+	}
+	h1 {
+		font-size:2.2rem;
+	}
 }

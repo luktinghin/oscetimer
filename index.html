@@ -12,31 +12,38 @@
 	<meta name="description" content="OSCE Timer">
     <meta name="keywords" content="OSCE Timer">
     <meta name="author" content="">
-    <title>OSCE Timer - A synchronized timer based on WebRTC</title>
+    <title>OSCE Timer - Free synchronized countdown timer</title>
 </head>
 <body>
 	<div id="main-body">
 		<div id="status">
-			WELCOME!
+			Welcome!
 		</div>
 		<div id="page_start">
-			<div>Enter your role</div>
-			<button onclick="init(0)">Admin</button>
-			<button onclick="init(1)">Listener</button>
+			<div id="page_start_inner">
+				<h1>OSCEtimer.app</h1>
+				<h2>The OSCE Timer is a free, web-based synchronized countdown timer based on peerJS.</h2>
+				<h3>All users are connected to a synchronized timer via a peer-to-peer connection using the ID provided by the administrator. </h3>
+				<div class="section line">You can choose to have one of two roles. An administrator controls the countdown duration and the starting or stopping of the timer. A listener listens to the time signal broadcast from the administrator. A peer-to-peer connection ensures that the timers on different connected devices are synchronized.</div>
+				<div class="section" style="text-align:center">
+					<div class="section">Choose a role to begin:</div>
+					<a class="button invert" onclick="init(0)">Admin</a>
+					<a class="button invert" onclick="init(1)">Listener</a>
+				</div>
+			</div>
 		</div>
 		<div id="page_admin">
 			<div class="section line" id="div_iddisplay">
-				<div>My ID: </div>
-				<div id="ownID"></div>
-				<div>
-					<button onclick="sharefunction2()">Share link</button>
-					<button onclick="copyfunction2(true)">Copy link</button>
-					<button onclick="copyfunction2(false)">Copy ID</button>
-				</div>
+				<div>My ID: <span id="ownID"></span></div>
+			<div>
+					<a class="button tinybutton" onclick="sharefunction2()">Share link</a>
+					<a class="button tinybutton" onclick="copyfunction2(true)">Copy link</a>
+					<a class="button tinybutton" onclick="copyfunction2(false)">Copy ID</a>
+			</div>
 			</div>
 			<div class="section">
-				<div>Select countdown duration:</div>
-				<select id="select_timer">
+				<div>Select countdown duration:
+					<select id="select_timer">
 					<option value="1">1min</option>
 					<option value="2">2min</option>
 					<option value="3">3min</option>
@@ -47,10 +54,22 @@
 					<option value="8">8min</option>
 					<option value="9">9min</option>
 					<option value="10">10min</option>
-				</select>
+					<option value="15">15min</option>
+					<option value="20">20min</option>
+					<option value="25">25min</option>
+					<option value="30">30min</option>
+					<option value="35">35min</option>
+					<option value="40">40min</option>
+					<option value="45">45min</option>
+					<option value="50">50min</option>
+					<option value="55">55min</option>
+					<option value="60">60min</option>
+					</select>
+				</div>
+
 				<div>
-					<button onclick="start_stopwatch()">Start Timer</button>
-					<button onclick="reset_stopwatch()">Reset timer</button>
+					<a class="button tinybutton" onclick="start_stopwatch()">Start Timer</a>
+					<a class="button tinybutton" onclick="reset_stopwatch()">Reset timer</a>
 				</div>
 			</div>
 		</div>
@@ -63,12 +82,16 @@
 			<button id="sendbutton1" onclick="testsend1();">Send Message 1</button>
 		</div>
 		<div class="" id="div_timer">
+			<div id="div_timer_inner">
 				<div>Countdown timer:</div>
 				<div id="timer_display"></div>
+			</div>
 		</div>
-		<div>---Message zone---</div>
+		<div id="page_msg">
+			<div>---Message zone---</div>
 			<div id="message">
 			</div>
+		</div>
 	</div><!-- close main body-->
 </body>
 <script src="main.js"></script>

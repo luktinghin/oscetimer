@@ -131,10 +131,12 @@ function init(value) {
     if (value == 0) {
         document.getElementById("page_admin").style.display = "block";
         document.getElementById("page_start").style.display = "none";
+        document.getElementById("page_msg").style.display = "block";
         document.getElementById("status").innerHTML = "Admin: await connection";
     } else {
         document.getElementById("page_receiver").style.display = "block";
         document.getElementById("page_start").style.display = "none";
+        document.getElementById("page_msg").style.display = "block";
         document.getElementById("status").innerHTML = "Listener: await connection";
     }
 }
@@ -142,7 +144,7 @@ function init(value) {
 function addMessage(param2,param1) {
     el0 = document.getElementById("message");
     if (param1 == undefined) param1 = "System";
-    el0.innerHTML += "<br>" + param1 + ": " + param2;
+    el0.innerHTML = param1 + ": " + param2 + "<br>" + el0.innerHTML;
 }
 
 function init_receiver() {
@@ -188,7 +190,10 @@ function sender_sync() {
     if (temporal.distance>0) {
         if (connections.length>0) {
             connections.forEach((el) => {
-                if (el.conn != null) el.conn.send("TS" + temporal.distance);
+                if (el.conn != null) 
+                    if (el.conn.open) {
+                        el.conn.send("TS" + temporal.distance);
+                    }
             });
         }
     }
@@ -197,7 +202,19 @@ function sender_sync() {
 function sender_command(param) {
     if (connections.length>0) {
         connections.forEach((el) => {
-            if (el.conn != null) el.conn.send("CM" + param);
+            if (el.conn != null) {
+                if (el.conn.open) el.conn.send("CM" + param);
+            }
+        });
+    }
+}
+
+function sender_sendmsg(param) {
+    if (connections.length>0) {
+        connections.forEach((el) => {
+            if (el.conn != null) {
+                if (el.conn.open) el.conn.send("MS" + param);
+            }
         });
     }
 }
@@ -286,7 +303,7 @@ function copyfunction(param,is_link) {
 }
 
 function start_stopwatch(distance) {
-    document.getElementById("div_timer").style.display = "block";
+    document.getElementById("div_timer").style.display = "flex";
     offset = Date.now();
     console.log(offset);
     if (distance == undefined) {
