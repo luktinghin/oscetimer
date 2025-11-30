@@ -108,6 +108,24 @@ button, select, input {
   font-family:  "SourceSans", "Avenir", "Calibri", "Trebuchet MS", "Lucida Sans", sans-serif;
 }
 
+select {
+  height: 30px;
+  border: 1px solid #aaa;
+  margin: 2px 0px 2px 0px; 
+  padding:0px 2px; 
+  outline: none;
+  vertical-align:bottom;
+  border-radius:4px;
+  	color:#fff;
+	background:#303030;
+}
+
+select:focus {
+  border: 1px solid rgba(81, 203, 238, 1);
+  box-shadow: 0 0 6px rgba(81, 203, 238, 1);
+}
+
+
 h1 {
   color: white;
   font-size: 3rem;
@@ -292,7 +310,7 @@ a.button.tinybutton > i {
 	background: #303030;
 	border: 1px solid #555;
 	border-radius:16px;
-	max-height:20vh;
+	max-height:30vh;
 	overflow-y:auto;
 }
 

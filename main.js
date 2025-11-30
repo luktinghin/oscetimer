@@ -138,6 +138,12 @@ function init(value) {
         document.getElementById("page_start").style.display = "none";
         document.getElementById("page_msg").style.display = "block";
         document.getElementById("status").innerHTML = "Listener: await connection";
+        if (value == 2) {
+            //load from ext URL
+            document.getElementById("page_receiver_1").style.display = "none";
+            document.getElementById("page_receiver_2").style.display = "block";
+            document.getElementById("page_receiver_msg").innerHTML = r_conn.peer;
+        }
     }
 }
 
@@ -250,7 +256,7 @@ function loadURL() {
             console.log(inputString);
             addMessage("Auto-connected via URL command.")
             join(inputString);
-            init(1);
+            init(2);
         }
     }
 }

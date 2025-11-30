@@ -42,8 +42,9 @@
 			</div>
 			</div>
 			<div class="section">
-				<div>Select countdown duration:
-					<select id="select_timer">
+				<div style="display:flex;align-items:center;gap:0.5rem; padding-bottom:0.5rem">
+					<div>Select countdown duration:</div>
+					<div><select id="select_timer">
 					<option value="1">1min</option>
 					<option value="2">2min</option>
 					<option value="3">3min</option>
@@ -64,7 +65,7 @@
 					<option value="50">50min</option>
 					<option value="55">55min</option>
 					<option value="60">60min</option>
-					</select>
+					</select></div>
 				</div>
 
 				<div>
@@ -74,12 +75,19 @@
 			</div>
 		</div>
 		<div id="page_receiver">
-			<div>Enter broadcaster ID</div>
-			<div>
-				<input id="senderID">
-				<button id="submitID" onclick="init_receiver()">submit</button>
+			<div class="section line" id="page_receiver_1">
+				<div>Enter broadcaster ID</div>
+				<div>
+					<input id="senderID">
+					<button id="submitID" onclick="init_receiver()">submit</button>
+				</div>
 			</div>
-			<button id="sendbutton1" onclick="testsend1();">Send Message 1</button>
+			<div class="section line" id="page_receiver_2" style="display:none">
+				<div id="page_receiver_msg"></div>
+			</div>
+			<div class="section">
+				<button id="sendbutton1" onclick="testsend1();">Send Message 1</button>
+			</div>
 		</div>
 		<div class="" id="div_timer">
 			<div id="div_timer_inner">
