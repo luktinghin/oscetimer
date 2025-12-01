@@ -9,6 +9,9 @@ var loop2 = null;
 var connections = new Array();
 var c_count = -1;
 var temporal = {};
+var isFullscreen = false;
+var initiated = false;
+var mode = -1;
 temporal.distance = 0;
 temporal.firstrun = -1;
 temporal.paused = false;
@@ -136,11 +139,13 @@ function init(value) {
         document.getElementById("page_start").style.display = "none";
         document.getElementById("page_msg").style.display = "block";
         document.getElementById("status").innerHTML = "Admin: await connection";
+        mode = 0;
     } else {
         document.getElementById("page_receiver").style.display = "block";
         document.getElementById("page_start").style.display = "none";
         document.getElementById("page_msg").style.display = "block";
         document.getElementById("status").innerHTML = "Listener: await connection";
+        mode = 1;
         if (value == 2) {
             //load from ext URL
             document.getElementById("page_receiver_1").style.display = "none";
@@ -259,10 +264,13 @@ function loadURL() {
     //read URL
     const queryString = window.location.search;
     if (queryString == "") {
-        console.log('no URL params detected');
-        document.getElementById("status").innerHTML = "Welcome!";
-        document.getElementById("page_start").style.opacity = "1";
-        document.getElementById("status").style.display = "none";
+        if (!initiated) {
+            console.log('no URL params detected');
+            document.getElementById("status").innerHTML = "Welcome!";
+            document.getElementById("page_start").style.opacity = "1";
+            document.getElementById("status").style.display = "none";
+            initiated = true;
+        }
     } else {
         const urlParams = new URLSearchParams(queryString);
         const inputString = urlParams.get("U");
@@ -367,6 +375,14 @@ function start_stopwatch(distance) {
         temporal.paused = false;
         temporal.pausefrom = 0;
     }
+    if (mode == 0) {
+        document.getElementById("select_timer").disabled = true;
+        document.getElementById("startbutton1").style.display = "none";
+        document.getElementById("startbutton2").style.display = "none";
+        document.getElementById("pausebutton").style.display = "flex";
+        document.getElementById("resetbutton").style.display = "flex";
+        document.getElementById("fullscreenbutton").style.display = "flex";
+    }
 }
 
 function pause_stopwatch() {
@@ -384,6 +400,11 @@ function pause_action() {
     document.getElementById("timer_status").innerHTML = "Countdown is PAUSED.";
     document.getElementById("timer_status").classList.add("pause");
     document.getElementById("timer_display").classList.add("pause");
+    if (mode == 0) {
+        //document.getElementById("startbutton1").style.display = "inline-block";
+        document.getElementById("startbutton2").style.display = "flex";
+        document.getElementById("pausebutton").style.display = "none";
+    }
 }
 
 function reset_stopwatch() {
@@ -397,11 +418,65 @@ function reset_action() {
     time = 0;
     clearInterval(loop1);
     clearInterval(loop2);
+    document.getElementById("timer_status").classList.remove("pause");
+    document.getElementById("timer_display").classList.remove("pause");
     document.getElementById("timer_display").innerHTML = "";
-    document.getElementById("timer_status").innerHTML = "Countdown is stopped.";    
+    document.getElementById("timer_status").innerHTML = "Countdown is stopped.";   
+    if (mode == 0) {
+        document.getElementById("select_timer").disabled = false;
+        document.getElementById("startbutton1").style.display = "flex";
+        document.getElementById("startbutton2").style.display = "none";
+        document.getElementById("pausebutton").style.display = "none";
+        document.getElementById("resetbutton").style.display = "none";
+        document.getElementById("fullscreenbutton").style.display = "none";
+    }
 }
 
 function testsend1() {
     count = count + 1;
     r_conn.send("MS"+"Hello world " + count);
+}
+
+function fullscreen() {
+    if (!isFullscreen) {
+        if (document.documentElement.requestFullscreen != undefined) {
+            document.documentElement.requestFullscreen()
+                .then(() => {
+                    isFullscreen = true;
+                    console.log("fullscreen activated")
+                    if (isFullscreen) {
+                        console.log("try and lock landscape");
+                        screen.orientation.lock("landscape")
+                        .then(() => {})
+                        .catch((err) => console.error(err));
+                    }
+                })
+                .catch((err) => console.error(err));
+        }
+        document.getElementById("status").style.display = "none";
+        if (mode == 1) document.getElementById("page_receiver").style.display = "none";
+        if (mode == 0) document.getElementById("page_admin").style.display = "none";
+        document.getElementById("page_msg").style.display = "none";
+        document.getElementById("div_timer").classList.add("FS");
+        isFullscreen = true;
+    } else {
+                isFullscreen = false;
+                if (mode == 1) document.getElementById("page_receiver").style.display = "block";
+                if (mode == 0) document.getElementById("page_admin").style.display = "block";
+                document.getElementById("status").style.display = "block";
+                document.getElementById("page_msg").style.display = "block";
+                document.getElementById("div_timer").classList.remove("FS");
+        if (document.exitFullscreen != undefined) {
+        document.exitFullscreen()
+            .then(() => {
+                if (isFullscreen) {
+                    screen.orientation.unlock();
+                    console.log("orientation unlocked");
+                }
+
+                console.log("fullscreen deactivated");
+            })
+            .catch((err) => console.error(err));
+        }
+    }
 }

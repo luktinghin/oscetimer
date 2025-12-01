@@ -24,7 +24,7 @@
 				<h1>OSCEtimer.app</h1>
 				<h2>The OSCE Timer is a free, web-based synchronized countdown timer based on peerJS.</h2>
 				<h3>All users are connected to a synchronized timer via a peer-to-peer connection using the ID provided by the administrator. </h3>
-				<div class="section line">You can choose to have one of two roles. An administrator controls the countdown duration and the starting or stopping of the timer. A listener listens to the time signal broadcast from the administrator. A peer-to-peer connection ensures that the timers on different connected devices are synchronized.</div>
+				<div class="section line">An administrator controls the countdown timer (start / stop / countdown duration). A listener listens to the time signal broadcast from the administrator. A peer-to-peer connection ensures that the timers on different connected devices are synchronized.</div>
 				<div class="section" style="text-align:center">
 					<div class="section">Choose a role to begin:</div>
 					<a class="button invert" onclick="init(0)">Admin</a>
@@ -66,13 +66,12 @@
 					<option value="55">55min</option>
 					<option value="60">60min</option>
 					</select></div>
+					<div>
+						<a class="button tinybutton" onclick="start_stopwatch()" id="startbutton1">Start Timer</a>
+					</div>
 				</div>
 
-				<div>
-					<a class="button tinybutton" onclick="start_stopwatch()">Start Timer</a>
-					<a class="button tinybutton" onclick="pause_stopwatch()">Pause Timer</a>
-					<a class="button tinybutton" onclick="reset_stopwatch()">Reset timer</a>
-				</div>
+
 			</div>
 		</div>
 		<div id="page_receiver">
@@ -91,6 +90,24 @@
 			</div>
 		</div>
 		<div class="" id="div_timer">
+			<div id="div_timer_controls">
+					<div id="startbutton2" style="" class="iconbutton"  onclick="start_stopwatch()">
+						<div class="icon"><i class="fas fa-fw fa-play"></i></div>
+						<a class="button tinybutton" id="">Start</a>
+					</div>
+					<div id="pausebutton" class="iconbutton" onclick="pause_stopwatch()">
+						<div class="icon"><i class="fas fa-fw fa-pause"></i></div>
+						<a class="button tinybutton"  id="">Pause</a>
+					</div>
+					<div id="resetbutton" class="iconbutton" onclick="reset_stopwatch()">
+						<div class="icon"><i class="fas fa-fw fa-sync-alt"></i></div>
+						<a class="button tinybutton"  id="">Reset</a>
+					</div>
+					<div id="fullscreenbutton" style="" class="iconbutton"  onclick="fullscreen()">
+						<div class="icon"><i class="fas fa-fw fa-expand"></i></div>
+						<a class="button tinybutton">Fullscreen</a>
+					</div>
+			</div>
 			<div id="div_timer_inner">
 				<div id="timer_status">Countdown is running:</div>
 				<div id="timer_display"></div>

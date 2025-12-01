@@ -287,7 +287,40 @@ a.button.tinybutton:hover, a.button.tinybutton:active {
 a.button.tinybutton > i {
   padding-right: 3px;
 }
-
+#div_timer_controls {
+  display:flex;
+  gap:10px;
+}
+.iconbutton {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+  cursor:pointer;
+}
+.iconbutton .icon {
+  font-size:2.5rem;
+  border:1px solid #666;
+  border-radius:9rem;
+  width:4rem;
+  height:4rem;
+  text-align:center;
+  padding-top:5px;
+}
+.iconbutton a.tinybutton, .iconbutton a.tinybutton:hover, .iconbutton a.tinybutton:active {
+  background:transparent;
+  border-color:transparent;
+  color:#666;
+}
+.iconbutton:hover .icon {
+  background:#eee;
+  color:#666;
+}
+.iconbutton:hover a.tinybutton, .iconbutton:hover a.tinybutton:hover, .iconbutton:hover a.tinybutton:active {
+  background:#555;
+  border-color:transparent;
+  color:#eee;
+}
 #main-body {
 	color:#eee;
 }
@@ -358,6 +391,15 @@ a.button.tinybutton > i {
 	align-items:center;
 	height:40vh;
 	flex-direction:column;
+}
+
+#div_timer.FS {
+  height:95vh;
+}
+
+
+#div_timer.FS #timer_display {
+  font-size:6rem;
 }
 
 #div_timer_inner {
