@@ -216,7 +216,7 @@ function sender_sync() {
                     if (el.conn.open) {
                         el.conn.send("TS" + temporal.distance);
                         if (temporal.paused) {
-                            el.conn.send("CMpause");
+                            sender_command("pause");
                         }
                     }
             });
