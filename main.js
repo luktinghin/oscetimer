@@ -513,6 +513,7 @@ function check_status2() {
     } else {
         document.getElementById("status").innerHTML = "Listener: lost connection";
         document.getElementById("page_receiver_msg").innerHTML = "Disconnected";
+        receiver_reset();
     }
 }
 function check_status() {
