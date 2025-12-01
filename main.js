@@ -125,6 +125,9 @@ temporal.paused = false;
                             //message
                             str = data.slice(2);
                             addMessage(str);    
+                        } else if (data.slice(0,2) == "CP") {
+                            str = data.slice(2);
+                            document.getElementById("timer_display").innerText = str;
                         }
                         
                     });
@@ -217,7 +220,7 @@ function sender_sync() {
                         el.conn.send("TS" + temporal.distance);
                         if (temporal.paused) {
                             console.log("senderpause");
-                            sender_command("pause");
+                            el.conn.send("CP" + document.getElementById("timer_display").innerText);
                         }
                     }
             });
@@ -384,6 +387,9 @@ function start_stopwatch(distance) {
         }
         temporal.paused = false;
         temporal.pausefrom = 0;
+        if (connections.length>0) {
+            sender_sync();
+        }
     }
     if (mode == 0) {
         document.getElementById("select_timer").disabled = true;
