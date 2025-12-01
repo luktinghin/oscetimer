@@ -102,6 +102,7 @@ temporal.paused = false;
                         console.log("Connected to: " + r_conn.peer);
                         r_conn.send("CMrequestsync");
                         document.getElementById("page_receiver_msg").innerHTML = "Connected: " + r_conn.peer;
+                        periodic_check();
                         // Check URL params for comamnds that should be sent immediately
                         //var command = getUrlParam("command");
                         //if (command)
@@ -220,6 +221,8 @@ function sender_sync() {
                         el.conn.send("TS" + temporal.distance);
                         if (temporal.paused) {
                             console.log("senderpause");
+                            sender_command("pause");
+                            //to hide the bug for pause mechanism on receiver side. receiver's clock will be wrong because pause-from is not synced.
                             el.conn.send("CP" + document.getElementById("timer_display").innerText);
                         }
                     }
@@ -497,5 +500,26 @@ function fullscreen() {
             })
             .catch((err) => console.error(err));
         }
+    }
+}
+receiver_check = null;
+function periodic_check() {
+    receiver_check = setInterval(check_status2,10000);
+}
+function check_status2() {
+    if (check_status()) {
+        document.getElementById("status").innerHTML = "Listener: connected to peer";
+        document.getElementById("page_receiver_msg").innerHTML = "Connected: " + r_conn.peer;
+    } else {
+        document.getElementById("status").innerHTML = "Listener: lost connection";
+        document.getElementById("page_receiver_msg").innerHTML = "Disconnected";
+    }
+}
+function check_status() {
+    status = r_conn.peerConnection.iceConnectionState;
+    if (status === 'connected' || status === 'completed') {
+        return true;
+    } else {
+        return false;
     }
 }
