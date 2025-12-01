@@ -110,6 +110,7 @@ button, select, input {
 
 select {
   height: 30px;
+  width:120px;
   border: 1px solid #aaa;
   margin: 2px 0px 2px 0px; 
   padding:0px 2px; 
@@ -299,13 +300,13 @@ a.button.tinybutton > i {
   cursor:pointer;
 }
 .iconbutton .icon {
-  font-size:2.5rem;
+  font-size:2rem;
   border:1px solid #666;
   border-radius:9rem;
   width:4rem;
   height:4rem;
   text-align:center;
-  padding-top:5px;
+  padding-top:11px;
 }
 .iconbutton a.tinybutton, .iconbutton a.tinybutton:hover, .iconbutton a.tinybutton:active {
   background:transparent;
@@ -320,6 +321,19 @@ a.button.tinybutton > i {
   background:#555;
   border-color:transparent;
   color:#eee;
+}
+
+#startbutton1 {
+  gap:0;
+}
+#startbutton1 .icon {
+  font-size:1.5rem;
+  padding-top:6px;
+  width:3rem;
+  height:3rem;
+}
+#startbutton1 a.button.tinybutton {
+  min-width:0;
 }
 #main-body {
 	color:#eee;
@@ -439,5 +453,8 @@ a.button.tinybutton > i {
   h2, h3 {
     padding:5px 0;
     margin:5px 0;
+  }
+  .section {
+    padding:5px 0;
   }
 }

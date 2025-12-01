@@ -34,40 +34,43 @@
 		</div>
 		<div id="page_admin">
 			<div class="section line" id="div_iddisplay">
-				<div>My ID: <span id="ownID"></span></div>
-			<div>
+				<div style="font-size:0.8rem;text-align:center">My ID: <span id="ownID" style="font-weight:bold"></span></div>
+			<div style="text-align:center">
 					<a class="button tinybutton" onclick="sharefunction2()">Share link</a>
 					<a class="button tinybutton" onclick="copyfunction2(true)">Copy link</a>
 					<a class="button tinybutton" onclick="copyfunction2(false)">Copy ID</a>
 			</div>
 			</div>
 			<div class="section">
-				<div style="display:flex;align-items:center;gap:0.5rem; padding-bottom:0.5rem">
-					<div>Select countdown duration:</div>
-					<div><select id="select_timer">
-					<option value="1">1min</option>
-					<option value="2">2min</option>
-					<option value="3">3min</option>
-					<option value="4">4min</option>
-					<option value="5">5min</option>
-					<option value="6">6min</option>
-					<option value="7">7min</option>
-					<option value="8">8min</option>
-					<option value="9">9min</option>
-					<option value="10" selected>10min</option>
-					<option value="15">15min</option>
-					<option value="20">20min</option>
-					<option value="25">25min</option>
-					<option value="30">30min</option>
-					<option value="35">35min</option>
-					<option value="40">40min</option>
-					<option value="45">45min</option>
-					<option value="50">50min</option>
-					<option value="55">55min</option>
-					<option value="60">60min</option>
-					</select></div>
+				<div style="display:flex;align-items:center;justify-content:center;gap:1rem">
 					<div>
-						<a class="button tinybutton" onclick="start_stopwatch()" id="startbutton1">Start Timer</a>
+						<div>Select countdown duration:</div>
+						<div><select id="select_timer">
+						<option value="1">1min</option>
+						<option value="2">2min</option>
+						<option value="3">3min</option>
+						<option value="4">4min</option>
+						<option value="5">5min</option>
+						<option value="6">6min</option>
+						<option value="7">7min</option>
+						<option value="8">8min</option>
+						<option value="9">9min</option>
+						<option value="10" selected>10min</option>
+						<option value="15">15min</option>
+						<option value="20">20min</option>
+						<option value="25">25min</option>
+						<option value="30">30min</option>
+						<option value="35">35min</option>
+						<option value="40">40min</option>
+						<option value="45">45min</option>
+						<option value="50">50min</option>
+						<option value="55">55min</option>
+						<option value="60">60min</option>
+						</select></div>
+					</div>
+					<div class="iconbutton" onclick="start_stopwatch()" id="startbutton1">
+						<div class="icon"><i class="fas fa-stopwatch"></i></div>
+						<a class="button tinybutton">Start</a>
 					</div>
 				</div>
 
@@ -82,11 +85,8 @@
 					<a class="button tinybutton" id="submitID" onclick="init_receiver()">Submit</a>
 				</div>
 			</div>
-			<div class="section line" id="page_receiver_2" style="display:none">
+			<div class="section" id="page_receiver_2" style="display:none">
 				<div id="page_receiver_msg" style="font-size:0.8rem;color:#666"></div>
-			</div>
-			<div class="section">
-				<button id="sendbutton1" onclick="testsend1();">Send Message 1</button>
 			</div>
 		</div>
 		<div class="" id="div_timer">

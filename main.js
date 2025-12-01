@@ -101,6 +101,7 @@ temporal.paused = false;
                         document.getElementById("status").innerHTML = "Listener: connected to peer";
                         console.log("Connected to: " + r_conn.peer);
                         r_conn.send("CMrequestsync");
+                        document.getElementById("page_receiver_msg").innerHTML = "Connected: " + r_conn.peer;
                         // Check URL params for comamnds that should be sent immediately
                         //var command = getUrlParam("command");
                         //if (command)
@@ -114,6 +115,7 @@ temporal.paused = false;
                             temporal.distance = str * 1;
                             temporal.destination = temporal.distance + Date.now();
                             receiver_sync(temporal.distance);
+                            document.getElementById("page_receiver_msg").innerHTML = "Syncing: " + r_conn.peer;
                             //console.log(temporal);
                             addMessage("Timer distance is " + converttime(Math.floor(temporal.distance/1000)),"Debug");
                         } else if (data.slice(0,2) == "CM") {
@@ -152,7 +154,7 @@ function init(value) {
             //load from ext URL
             document.getElementById("page_receiver_1").style.display = "none";
             document.getElementById("page_receiver_2").style.display = "block";
-            document.getElementById("page_receiver_msg").innerHTML = "Host admin: " + r_conn.peer;
+            document.getElementById("page_receiver_msg").innerHTML = "Attempt to connect: " + r_conn.peer;
         }
     }
 }
@@ -356,8 +358,8 @@ function start_stopwatch(distance) {
         display_timer();
         clearInterval(loop1);
         clearInterval(loop2);
-        loop1 = setInterval(periodic_sync,2000);
-        loop2 = setInterval(display_timer,100);
+        loop1 = setInterval(periodic_sync,15000);
+        loop2 = setInterval(display_timer,250);
         if (connections.length>0) {
             sender_sync();
         }
@@ -369,8 +371,8 @@ function start_stopwatch(distance) {
         display_timer();
         clearInterval(loop1);
         clearInterval(loop2);
-        loop1 = setInterval(periodic_sync,10000);
-        loop2 = setInterval(display_timer,100);
+        loop1 = setInterval(periodic_sync,15000);
+        loop2 = setInterval(display_timer,250);
         if (connections.length>0) {
             sender_sync();
         }
