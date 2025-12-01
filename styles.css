@@ -288,7 +288,7 @@ a.button.tinybutton > i {
   padding-right: 3px;
 }
 #div_timer_controls {
-  display:flex;
+  display:none;
   gap:10px;
 }
 .iconbutton {

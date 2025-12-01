@@ -138,12 +138,14 @@ function init(value) {
         document.getElementById("page_admin").style.display = "block";
         document.getElementById("page_start").style.display = "none";
         document.getElementById("page_msg").style.display = "block";
+        document.getElementById("div_timer_controls").style.display = "flex";
         document.getElementById("status").innerHTML = "Admin: await connection";
         mode = 0;
     } else {
         document.getElementById("page_receiver").style.display = "block";
         document.getElementById("page_start").style.display = "none";
         document.getElementById("page_msg").style.display = "block";
+        document.getElementById("div_timer_controls").style.display = "none";
         document.getElementById("status").innerHTML = "Listener: await connection";
         mode = 1;
         if (value == 2) {
