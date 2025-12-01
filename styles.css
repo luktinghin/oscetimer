@@ -429,6 +429,12 @@ a.button.tinybutton > i {
 	text-align:center;
 }
 
+#div_timer_controls_receiver {
+  display:none;
+  width:70%;
+  justify-content:flex-end;
+}
+
 #timer_display {
 	font-size:3rem;
 	font-weight:bold;

@@ -215,6 +215,9 @@ function sender_sync() {
                 if (el.conn != null) 
                     if (el.conn.open) {
                         el.conn.send("TS" + temporal.distance);
+                        if (temporal.paused) {
+                            el.conn.send("CMpause");
+                        }
                     }
             });
         }
@@ -386,6 +389,9 @@ function start_stopwatch(distance) {
         document.getElementById("pausebutton").style.display = "flex";
         document.getElementById("resetbutton").style.display = "flex";
         document.getElementById("fullscreenbutton").style.display = "flex";
+    }
+    if (mode == 1) {
+        document.getElementById("div_timer_controls_receiver").style.display = "flex";
     }
 }
 
