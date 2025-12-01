@@ -216,6 +216,7 @@ function sender_sync() {
                     if (el.conn.open) {
                         el.conn.send("TS" + temporal.distance);
                         if (temporal.paused) {
+                            console.log("senderpause");
                             sender_command("pause");
                         }
                     }
@@ -258,8 +259,10 @@ function receiver_reset() {
 
 function receiver_parsecommand(param) {
     if (param == "pause") {
+        console.log("receiverpause");
         receiver_pause();
     } else if (param == "reset") {
+        console.log("receiverreset");
         receiver_reset();
     } else if (param == "requestsync") {
         //this is received from receiver requesting sync
