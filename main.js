@@ -407,6 +407,7 @@ function start_stopwatch(distance) {
         document.getElementById("fullscreenbutton").style.display = "flex";
         document.getElementById("div_label_input").style.display = "block";
         document.getElementById("div_label_output").style.display = "none";
+        sender_label();
     }
     if (mode == 1) {
         document.getElementById("div_timer_controls_receiver").style.display = "flex";
@@ -447,6 +448,7 @@ function reset_stopwatch() {
 function reset_action() {
     temporal.paused = false;
     temporal.pausefrom = 0;
+    temporal.distance = 0;
     time = 0;
     clearInterval(loop1);
     clearInterval(loop2);
