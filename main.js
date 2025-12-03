@@ -98,10 +98,10 @@ temporal.paused = false;
                     });
 
                     r_conn.on('open', function () {
-                        document.getElementById("status").innerHTML = "Listener: connected to peer";
-                        console.log("Connected to: " + r_conn.peer);
+                        document.getElementById("status").innerHTML = "Listener: connected to host";
+                        console.log("Connected to: " + r_conn.peer.id);
                         r_conn.send("CMrequestsync");
-                        document.getElementById("page_receiver_msg").innerHTML = "Connected: " + r_conn.peer;
+                        document.getElementById("page_receiver_msg").innerHTML = "Connected: " + r_conn.peer.slice(16);
                         periodic_check();
                         // Check URL params for comamnds that should be sent immediately
                         //var command = getUrlParam("command");
@@ -510,12 +510,13 @@ function periodic_check() {
 }
 function check_status2() {
     if (check_status()) {
-        document.getElementById("status").innerHTML = "Listener: connected to peer";
-        document.getElementById("page_receiver_msg").innerHTML = "Connected: " + r_conn.peer;
+        document.getElementById("status").innerHTML = "Viewer: connected to host";
+        document.getElementById("page_receiver_msg").innerHTML = "Connected to host: " + r_conn.peer.slice(16);
     } else {
-        document.getElementById("status").innerHTML = "Listener: lost connection";
+        document.getElementById("status").innerHTML = "Viewer: lost connection";
         document.getElementById("page_receiver_msg").innerHTML = "Disconnected";
         receiver_reset();
+        document.getElementById("timer_status").innerHTML = "Please wait...";   
     }
 }
 function check_status() {

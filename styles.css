@@ -59,7 +59,8 @@ body {
   font-family:  "SourceSans", "Avenir", "Calibri", "Trebuchet MS", "Lucida Sans", sans-serif;
   font-size: 16px; 
   margin: 0px;
-  background:#222;
+  background: linear-gradient(180deg, rgb(22,22,28) 0%, rgb(30,30,35) 65%, rgb(10,10,10) 100%);
+  background-color:#222;
   overscroll-behavior-y: contain;
 }
 
@@ -362,12 +363,12 @@ a.button.tinybutton > i {
 	display: flex;
 	justify-content:center;
 	align-items:center;
-	height:90vh;
+	height:80vh;
 	opacity:0;
 }
 
 #page_start_inner {
-	padding:20px;
+	padding:40px 20px 0 20px;
 	width:65%;
 	color:#999;
 }
@@ -381,6 +382,7 @@ a.button.tinybutton > i {
 	border-radius:16px;
 	max-height:30vh;
 	overflow-y:auto;
+  box-shadow:0px 20px 25px -25px rgb(128,128,128) inset;
 }
 
 #page_receiver {
@@ -390,6 +392,7 @@ a.button.tinybutton > i {
 	background: #303030;
 	border: 1px solid #555;
 	border-radius:16px;
+  box-shadow:0px 20px 25px -25px rgb(128,128,128) inset;
 }
 
 .section {
@@ -418,7 +421,7 @@ a.button.tinybutton > i {
 }
 
 #div_timer_inner {
-	width:70%;
+	width:80%;
 	height:auto;
 	margin:10px;
 	padding:10px;
@@ -451,7 +454,7 @@ a.button.tinybutton > i {
 
 @media (max-width:599px) {
 	#page_start_inner {
-		width:95%;
+		width:100%;
 		font-size:0.9rem;
 	}
 	h1 {

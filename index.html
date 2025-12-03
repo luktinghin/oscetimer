@@ -22,8 +22,7 @@
 		<div id="page_start">
 			<div id="page_start_inner">
 				<h1>OSCEtimer.app</h1>
-				<h2>The OSCE Timer is a free, web-based synchronized countdown timer based on peerJS.</h2>
-				<h3>A host controls the countdown timer and all users on the network can view the same countdown timer simultaneously. </h3>
+				<h2>The OSCE Timer is a free, web-based synchronized countdown timer based on peerJS. All users are connected to the same countdown timer simultaneously. </h2>
 				<div class="section line">An HOST controls the countdown timer (start / stop / countdown duration). A VIEWER listens to the time signal broadcast from the administrator. A peer-to-peer connection ensures that the timers on different connected devices are synchronized.</div>
 				<div class="section" style="text-align:center">
 					<div class="section">Choose a role to begin:</div>
@@ -34,7 +33,7 @@
 		</div>
 		<div id="page_admin">
 			<div class="section line" id="div_iddisplay">
-				<div style="font-size:0.8rem;text-align:center">My ID: <span id="ownID" style="font-weight:bold"></span></div>
+				<div style="font-size:0.8rem;text-align:center; padding-bottom:5px">My ID: <span id="ownID" style="font-weight:bold"></span></div>
 			<div style="text-align:center">
 					<a class="button tinybutton" onclick="sharefunction2()">Share link</a>
 					<a class="button tinybutton" onclick="copyfunction2(true)">Copy link</a>
@@ -44,7 +43,7 @@
 			<div class="section">
 				<div style="display:flex;align-items:center;justify-content:center;gap:1rem; height:100px">
 					<div>
-						<div style="font-size:0.8rem">Select countdown duration:</div>
+						<div style="font-size:0.8rem">Countdown duration:</div>
 						<div><select id="select_timer">
 						<option value="1">1min</option>
 						<option value="2">2min</option>
