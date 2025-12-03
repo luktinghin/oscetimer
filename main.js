@@ -19,7 +19,7 @@ temporal.paused = false;
 // receiver.html code below
        function initialize() {
                     // Create own peer object with connection to shared PeerJS server
-                    peer = new Peer(null, {
+                    peer = new Peer("osce-timer-host-" + genID(), {
                         debug: 2
                     });
 
@@ -33,7 +33,7 @@ temporal.paused = false;
                         }
 
                         console.log('ID: ' + peer.id);
-                        document.getElementById("ownID").innerHTML = peer.id;
+                        document.getElementById("ownID").innerHTML = peer.id.slice(16);
                         loadURL();
                         //recvId.innerHTML = "ID: " + peer.id;
                         //status.innerHTML = "Awaiting connection...";
@@ -172,7 +172,7 @@ function addMessage(param2,param1) {
 function init_receiver() {
     //get id
     inputvalue = document.getElementById("senderID").value;
-    join(inputvalue);
+    join("osce-timer-host-" + inputvalue);
 }
 
 function update() { //OBSOLETE
@@ -289,13 +289,13 @@ function loadURL() {
         }
     } else {
         const urlParams = new URLSearchParams(queryString);
-        const inputString = urlParams.get("U");
+        const inputString = urlParams.get("V");
         if (inputString == "") {
-            console.log("url: U param empty");
+            console.log("url: V param empty");
         } else {
             console.log(inputString);
             addMessage("Auto-connected via URL command.")
-            join(inputString);
+            join("osce-timer-host-" + inputString);
             init(2);
         }
     }
@@ -306,12 +306,12 @@ function sharefunction2() {
 }
 
 function copyfunction2(is_link) {
-    copyfunction(peer.id,is_link);
+    copyfunction(peer.id.slice(16),is_link);
 }
 
 async function sharefunction(param) {
     //receives user id
-    url = "http://oscetimer.app/?U=" + param;
+    url = "http://oscetimer.app/?V=" + param;
     try {
         await navigator.share({url:url});
     } catch(err) {
@@ -523,4 +523,13 @@ function check_status() {
     } else {
         return false;
     }
+}
+function genID() {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  const charactersLength = characters.length;
+  for (let i = 0; i < 6; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
 }
