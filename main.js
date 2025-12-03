@@ -132,7 +132,6 @@ temporal.paused = false;
                         } else if (data.slice(0,2) == "LB") {
                             str = data.slice(2);
                             document.getElementById("div_label_output").innerText = str;
-                            console.log("LB" + str);
                         }
                     });
                     r_conn.on('close', function () {
@@ -187,6 +186,7 @@ function update() { //OBSOLETE
 
 function periodic_sync() {
     sender_sync();
+    sender_label();
 }
 
 function display_timer() {
