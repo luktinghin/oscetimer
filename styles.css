@@ -183,7 +183,7 @@ h4 {
 /*buttons */
 a.button {
   border-radius:2em;
-  min-width:100px;
+  min-width:90px;
   text-align:center;
   border:1px solid #198964;
   display:inline-block;
@@ -273,17 +273,18 @@ a.button.disabled:hover, a.button.disabled:active {
 }
 
 a.button.tinybutton {
-  color: rgba(128,128,128,1);
+  color: #ddd;
+  background-color: rgba(128,128,128,0.15);
   border-color: rgba(128,128,128,0.15);
   font-size: 90%;
-  padding: 2px 15px 2px 15px;
+  padding: 2px 10px 2px 10px;
   margin-right: 0;
   margin-bottom: 6px;
 }
 a.button.tinybutton:hover, a.button.tinybutton:active {
-  background-color: rgba(128,128,128,0.15);
-  border-color: rgba(128,128,128,0.5);
-  color:#eee;
+  background-color: rgba(128,128,128,0.5);
+  border-color: rgba(128,128,128,0.7);
+  color:#fff;
 }
 a.button.tinybutton > i {
   padding-right: 3px;
@@ -325,6 +326,7 @@ a.button.tinybutton > i {
 
 #startbutton1 {
   gap:0;
+  padding-top:10px;
 }
 #startbutton1 .icon {
   font-size:1.5rem;
@@ -346,7 +348,7 @@ a.button.tinybutton > i {
 
 #page_msg {
 	display:none;
-    height: 150px;
+    height: 100px;
     position: fixed;
     bottom: 0;
     width: 100%;

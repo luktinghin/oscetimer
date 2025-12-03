@@ -23,12 +23,12 @@
 			<div id="page_start_inner">
 				<h1>OSCEtimer.app</h1>
 				<h2>The OSCE Timer is a free, web-based synchronized countdown timer based on peerJS.</h2>
-				<h3>All users are connected to a synchronized timer via a peer-to-peer connection using the ID provided by the administrator. </h3>
-				<div class="section line">An administrator controls the countdown timer (start / stop / countdown duration). A listener listens to the time signal broadcast from the administrator. A peer-to-peer connection ensures that the timers on different connected devices are synchronized.</div>
+				<h3>A host controls the countdown timer and all users on the network can view the same countdown timer simultaneously. </h3>
+				<div class="section line">An HOST controls the countdown timer (start / stop / countdown duration). A VIEWER listens to the time signal broadcast from the administrator. A peer-to-peer connection ensures that the timers on different connected devices are synchronized.</div>
 				<div class="section" style="text-align:center">
 					<div class="section">Choose a role to begin:</div>
-					<a class="button invert" onclick="init(0)">Admin</a>
-					<a class="button invert" onclick="init(1)">Listener</a>
+					<a class="button invert" onclick="init(0)">Host</a>
+					<a class="button invert" onclick="init(1)">Viewer</a>
 				</div>
 			</div>
 		</div>
@@ -42,9 +42,9 @@
 			</div>
 			</div>
 			<div class="section">
-				<div style="display:flex;align-items:center;justify-content:center;gap:1rem">
+				<div style="display:flex;align-items:center;justify-content:center;gap:1rem; height:100px">
 					<div>
-						<div>Select countdown duration:</div>
+						<div style="font-size:0.8rem">Select countdown duration:</div>
 						<div><select id="select_timer">
 						<option value="1">1min</option>
 						<option value="2">2min</option>
@@ -108,8 +108,8 @@
 						<a class="button tinybutton">Fullscreen</a>
 					</div>
 			</div>
-			<div id="div_timer_controls_receiver">
-				<a class="button tinybutton"><i class="fas fa-expand" onclick="fullscreen();"></i>Fullscreen</a>
+			<div id="div_timer_controls_receiver"  >
+				<a class="button tinybutton" onclick="fullscreen();"><i class="fas fa-expand"></i>Fullscreen</a>
 			</div>
 			<div id="div_timer_inner">
 				<div id="timer_status">Countdown is running:</div>

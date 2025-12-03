@@ -44,7 +44,7 @@ temporal.paused = false;
                         connections[c_count].conn = c;
                         console.log("Connected to: " + connections[c_count].conn.peer);
                         count_string = c_count + 1;
-                        document.getElementById("status").innerHTML = "Admin: Connected to " + count_string + " peers";
+                        document.getElementById("status").innerHTML = "Host: Connected to " + count_string + " peers";
                         ready(c_count);
                     });
                     peer.on('disconnected', function () {
@@ -145,14 +145,14 @@ function init(value) {
         document.getElementById("page_start").style.display = "none";
         document.getElementById("page_msg").style.display = "block";
         document.getElementById("div_timer_controls").style.display = "flex";
-        document.getElementById("status").innerHTML = "Admin: await connection";
+        document.getElementById("status").innerHTML = "Host: await connection";
         mode = 0;
     } else {
         document.getElementById("page_receiver").style.display = "block";
         document.getElementById("page_start").style.display = "none";
         document.getElementById("page_msg").style.display = "block";
         document.getElementById("div_timer_controls").style.display = "none";
-        document.getElementById("status").innerHTML = "Listener: await connection";
+        document.getElementById("status").innerHTML = "Viewer: await connection";
         mode = 1;
         if (value == 2) {
             //load from ext URL
@@ -302,7 +302,7 @@ function loadURL() {
 }
 
 function sharefunction2() {
-    sharefunction(peer.id);
+    sharefunction(peer.id.slice(16));
 }
 
 function copyfunction2(is_link) {
@@ -323,7 +323,7 @@ async function sharefunction(param) {
 function copyfunction(param,is_link) {
     var textarea = document.createElement("textarea");
     if (is_link) {
-        str = "http://oscetimer.app/?U=" + param;    
+        str = "http://oscetimer.app/?V=" + param;    
     } else {
         str = param;
     }
@@ -437,6 +437,8 @@ function reset_stopwatch() {
 }
 
 function reset_action() {
+    temporal.paused = false;
+    temporal.pausefrom = 0;
     time = 0;
     clearInterval(loop1);
     clearInterval(loop2);
@@ -461,6 +463,12 @@ function testsend1() {
 
 function fullscreen() {
     if (!isFullscreen) {
+        document.getElementById("status").style.display = "none";
+        if (mode == 1) document.getElementById("page_receiver").style.display = "none";
+        if (mode == 0) document.getElementById("page_admin").style.display = "none";
+        document.getElementById("page_msg").style.display = "none";
+        document.getElementById("div_timer").classList.add("FS");
+        isFullscreen = true;
         if (document.documentElement.requestFullscreen != undefined) {
             document.documentElement.requestFullscreen()
                 .then(() => {
@@ -475,12 +483,6 @@ function fullscreen() {
                 })
                 .catch((err) => console.error(err));
         }
-        document.getElementById("status").style.display = "none";
-        if (mode == 1) document.getElementById("page_receiver").style.display = "none";
-        if (mode == 0) document.getElementById("page_admin").style.display = "none";
-        document.getElementById("page_msg").style.display = "none";
-        document.getElementById("div_timer").classList.add("FS");
-        isFullscreen = true;
     } else {
                 isFullscreen = false;
                 if (mode == 1) document.getElementById("page_receiver").style.display = "block";
