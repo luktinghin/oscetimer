@@ -129,8 +129,11 @@ temporal.paused = false;
                         } else if (data.slice(0,2) == "CP") {
                             str = data.slice(2);
                             document.getElementById("timer_display").innerText = str;
+                        } else if (data.slice(0,2) == "LB") {
+                            str = data.slice(2);
+                            document.getElementById("div_label_output").innerText = str;
+                            console.log("LB" + str);
                         }
-                        
                     });
                     r_conn.on('close', function () {
                         addMessage("Connection is lost");
@@ -401,9 +404,13 @@ function start_stopwatch(distance) {
         document.getElementById("pausebutton").style.display = "flex";
         document.getElementById("resetbutton").style.display = "flex";
         document.getElementById("fullscreenbutton").style.display = "flex";
+        document.getElementById("div_label_input").style.display = "block";
+        document.getElementById("div_label_output").style.display = "none";
     }
     if (mode == 1) {
         document.getElementById("div_timer_controls_receiver").style.display = "flex";
+        document.getElementById("div_label_input").style.display = "none";
+        document.getElementById("div_label_output").style.display = "block";
     }
 }
 
@@ -535,4 +542,24 @@ function genID() {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;
+}
+
+label_timeout = null;
+
+function sender_label_debounce() {
+    clearTimeout(label_timeout);
+    label_timeout = setTimeout(sender_label,500);
+}
+
+function sender_label() {
+    str = document.getElementById("label_input").value;
+    console.log(str);
+        if (connections.length>0) {
+            connections.forEach((el) => {
+                if (el.conn != null) 
+                    if (el.conn.open) {
+                        el.conn.send("LB" + str);
+                    }
+                })
+            }
 }
