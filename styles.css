@@ -183,7 +183,7 @@ h4 {
 /*buttons */
 a.button {
   border-radius:2em;
-  min-width:90px;
+  min-width:95px;
   text-align:center;
   border:1px solid #198964;
   display:inline-block;
@@ -277,7 +277,7 @@ a.button.tinybutton {
   background-color: rgba(128,128,128,0.15);
   border-color: rgba(128,128,128,0.15);
   font-size: 90%;
-  padding: 2px 10px 2px 10px;
+  padding: 2px 14px 2px 14px;
   margin-right: 0;
   margin-bottom: 6px;
 }
@@ -291,7 +291,6 @@ a.button.tinybutton > i {
 }
 #div_timer_controls {
   display:none;
-  gap:10px;
 }
 .iconbutton {
   display:flex;
