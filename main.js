@@ -276,6 +276,7 @@ function receiver_parsecommand(param) {
     } else if (param == "requestsync") {
         //this is received from receiver requesting sync
         sender_sync();
+        sender_label();
     }
 }
 
