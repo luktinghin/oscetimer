@@ -59,7 +59,7 @@ body {
   font-family:  "SourceSans", "Avenir", "Calibri", "Trebuchet MS", "Lucida Sans", sans-serif;
   font-size: 16px; 
   margin: 0px;
-  background: linear-gradient(180deg, rgb(25,25,30) 0%, rgb(35,35,40) 65%, rgb(10,10,10) 100%);
+  /*background: linear-gradient(180deg, rgb(25,25,30) 0%, rgb(35,35,40) 65%, rgb(10,10,10) 100%);*/
   background-color:#222;
   overscroll-behavior-y: contain;
 }
@@ -280,7 +280,6 @@ a.button.tinybutton {
   font-size: 90%;
   padding: 2px 14px 2px 14px;
   margin-right: 0;
-  margin-bottom: 6px;
 }
 a.button.tinybutton:hover, a.button.tinybutton:active {
   background-color: rgba(128,128,128,0.5);
@@ -380,9 +379,19 @@ a.button.tinybutton > i {
 	background: #303030;
 	border: 1px solid #555;
 	border-radius:16px;
-	max-height:30vh;
-	overflow-y:hideen;
-  box-shadow:0px 20px 25px -25px rgb(128,128,128) inset;
+
+  box-shadow:0px 20px 25px -25px rgb(128,128,128,0.5) inset;
+}
+
+#page_admincontrols {
+  display:none;
+  margin:10px;
+  padding:10px;
+  background: #303030;
+  border: 1px solid #555;
+  border-radius:16px;
+
+  box-shadow:0px 20px 25px -25px rgb(128,128,128,0.5) inset;
 }
 
 #page_receiver {
@@ -392,7 +401,7 @@ a.button.tinybutton > i {
 	background: #303030;
 	border: 1px solid #555;
 	border-radius:16px;
-  box-shadow:0px 20px 25px -25px rgb(128,128,128) inset;
+  box-shadow:0px 20px 25px -25px rgb(128,128,128,0.5) inset;
 }
 
 .section {
@@ -437,6 +446,7 @@ a.button.tinybutton > i {
   display:none;
   width:75%;
   justify-content:flex-end;
+  gap:10px;
 }
 
 #timer_display {
@@ -450,6 +460,132 @@ a.button.tinybutton > i {
 
 #timer_status.pause {
   color:red;
+}
+
+
+
+/*modal css*/
+.modal {
+    display: block; 
+    position: fixed; 
+    z-index:98;
+    padding-top: 15vh; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); 
+    background-color: rgba(0,0,0,0.4); 
+    opacity:0;
+    transition: opacity 0.3s ease-in-out;
+    will-change:opacity;
+    pointer-events:none;
+}
+
+
+.modal.fadein {
+  opacity:1;
+  pointer-events:auto;
+}
+
+/* Modal Content */
+.modal-content {
+    position: relative;
+    background-color: #fcfcfc;
+    margin: auto;
+    padding: 0;
+    font-size: 0.9rem;
+  border-radius: 15px;
+  border: 1px solid #fff;
+      
+    width: 85%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.4),0 6px 20px 0 rgba(0,0,0,0.19), inset 0px -4px 0px 0 rgba(0,0,0,0.15);
+    -webkit-transform: translateY(-150%);
+    transform: translateY(-150%);
+    transition: transform 300ms ease-in-out;
+    will-change:transform;
+    overscroll-behavior: contain;
+    /*-webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s;*/
+}
+
+.modal-content.open {
+  -webkit-transform: none;
+      transform: none;
+  transition: transform 300ms ease-in-out;
+}
+
+.modal.full {
+  padding-top: 5vw;
+}
+
+.close {
+    color:grey;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+
+.close:hover,
+.close:focus {
+    color:#198964;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-header {
+    padding: 15px 16px 2px 12px;
+    border-radius: 15px 15px 0px 0px;
+    box-shadow:0px 6px 8px -5px rgb(0 0 0 / 15%);
+    
+    /*background-color: #5cb85c;*/
+    background-color: #198964;
+    color:grey;
+    background:#fefefe;
+    font-size:120%;
+    line-height:30px;
+    font-weight:bold;
+}
+
+.modal-body {
+  padding:12px;
+  padding-bottom:20px;
+  overflow-y:auto; 
+  max-height: 70dvh;
+}
+
+.modal.full .modal-content {
+  width: 90%;
+}
+.modal.full .modal-body {
+  max-height: 81dvh;
+}
+
+.chatbox_input {
+  width:100%;
+  border:1px solid #ccc;
+  color:black;
+  background:white;
+  text-align:left;
+}
+
+.chatbox_author_self {
+  color:red;
+  font-style:italic;
+}
+
+.chatbox_author_else {
+  color:blue;
+  font-style:italic;
+}
+
+#div_userslist {
+  display:flex;
+  gap:10px;
 }
 
 @media (max-width:599px) {

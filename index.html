@@ -77,15 +77,21 @@
 			</div>
 		</div>
 		<div id="page_receiver">
-			<div class="section" id="page_receiver_1">
-				<div>Enter host ID manually:</div>
+			<div class="section line" id="page_receiver_1" style="display:flex;align-items:center;justify-content:center;gap:10px">
+				<div>Host ID:</div>
 				<div>
 					<input id="senderID">
 					<a class="button tinybutton" id="submitID" onclick="init_receiver()">Submit</a>
 				</div>
 			</div>
-			<div class="section" id="page_receiver_2" style="display:none">
+			<div class="section line" id="page_receiver_2" style="display:none">
 				<div id="page_receiver_msg" style="font-size:0.8rem;color:#666"></div>
+			</div>
+			<div class="section" id="page_receiver_alias" style="display:flex;align-items:center;justify-content:center;gap:10px">
+				<div>Alias:</div>
+				<div>
+					<input id="viewerID" oninput="updatereceiverdata();">
+				</div>
 			</div>
 		</div>
 		<div class="" id="div_timer">
@@ -108,26 +114,45 @@
 					</div>
 			</div>
 			<div id="div_timer_controls_receiver"  >
+				<a class="button tinybutton" onclick="chatbox(0,true)"><i class="fas fa-comment-alt"></i>Chat</a>
 				<a class="button tinybutton" onclick="fullscreen();"><i class="fas fa-expand"></i>Fullscreen</a>
 			</div>
 			<div id="div_timer_inner">
 				<div id="timer_status">Countdown is running:</div>
 				<div id="timer_display"></div>
 			</div>
-			<div id="div_label">
-				<div id="div_label_input" style="text-align:center">
-					<div>Enter a label or message:</div>
+			<div id="div_label_output"></div>
+		</div>
+		<div id="page_admincontrols">
+			<div style="text-align:center;font-weight:bold">USER MANAGEMENT</div>
+			<div id="div_label" class="section line">
+				<div id="div_label_input" style="display:flex;justify-content:center;align-items:center;gap:10px">
+					<div>Label</div>
 					<input id="label_input" oninput="sender_label_debounce()">
 				</div>
-				<div id="div_label_output"></div>
+			</div>
+			<div  class="section line">
+				<a class="button tinybutton" onclick="sender_displayusers();">Users update</a>
+			</div>
+			<div style="display:flex;align-items:center;gap:10px"  class="section">
+				<div>Connected to: </div>
+				<div id="div_userslist">
+				</div>
 			</div>
 		</div>
-		<div id="page_msg">
+		<div id="page_msg" style="display:none">
 			<div>---Message zone---</div>
 			<div id="message">
 			</div>
 		</div>
 	</div><!-- close main body-->
+	<!--modals-->
+		<div id="modalDialog" class="modal alt">
+			<div class="modal-content alt" id="modalDialogcontent">
+				<div class="modal-header alt"><span class="title">OSCETimer</span><span class="close alt" onClick="hidemodal('modalDialog')">&times;</span></div>
+				<div class="modal-body alt">OSCETimer is loading up...</div>
+			</div>
+		</div>
 </body>
 <script src="main.js"></script>
 <script src="https://unpkg.com/peerjs@1.5.0/dist/peerjs.min.js"></script>

@@ -15,11 +15,45 @@ var mode = -1;
 temporal.distance = 0;
 temporal.firstrun = -1;
 temporal.paused = false;
+var users = new Array();
+//for self, viewer
+var messages = "";
+var alias;
+
+
+function displayDialog(dialogTitle, dialogContent) {
+    const ElTitle = document.querySelector("#modalDialog .title");
+    const ElContent = document.querySelector("#modalDialog .modal-body");
+    ElTitle.innerHTML = dialogTitle;
+    ElContent.innerHTML = dialogContent;
+    setmodal("modalDialog");
+}
+
+function displayDialogFull(dialogTitle, dialogContent) {
+    const ElTitle = document.querySelector("#modalDialogFull .title");
+    const ElContent = document.querySelector("#modalDialogFull .modal-body");
+    ElTitle.innerHTML = dialogTitle;
+    ElContent.innerHTML = dialogContent;
+    setmodal("modalDialogFull");
+}
+
+function setmodal(modalname) {
+  modal = document.getElementById(modalname);
+  modalcontent = document.getElementById(modalname + "content");
+  modal.classList.add("fadein");
+  modalcontent.classList.add("open");
+}
+
+function hidemodal(param) {
+    document.getElementById(param + "content").classList.remove("open");
+    document.getElementById(param).classList.remove("fadein");
+    modal = undefined;
+}
 
 // receiver.html code below
        function initialize() {
                     // Create own peer object with connection to shared PeerJS server
-                    peer = new Peer("osce-timer-host-" + genID(), {
+                    peer = new Peer("osce-timer-user-" + genID(), {
                         debug: 2
                     });
 
@@ -42,6 +76,9 @@ temporal.paused = false;
                         c_count = c_count+1;
                         connections[c_count] = {};
                         connections[c_count].conn = c;
+                        users[c_count] = {};
+                        users[c_count].id = connections[c_count].conn.peer.slice(16);
+                        users[c_count].messages = "";
                         console.log("Connected to: " + connections[c_count].conn.peer);
                         count_string = c_count + 1;
                         document.getElementById("status").innerHTML = "Host: Connected to " + count_string + " peers";
@@ -75,9 +112,19 @@ temporal.paused = false;
                             str = data.slice(2);
                             console.log("Data received from peer " + connections[c_count].conn.peer);
                             addMessage(str,"Peer #" + c_count);
+                            if (users[c_count].data != undefined) {
+                                users[c_count].messages += "<div><span class='chatbox_author_else'>" + users[c_count].data.alias + ": </span>" + str + "</div>";
+                            } else {
+                                users[c_count].messages += "<div><span class='chatbox_author_else'>" + users[c_count].id + ": </span>" + str + "</div>";
+                            }
+                            
                         } else if (data.slice(0,2)=="CM") {
                             str = data.slice(2);
                             receiver_parsecommand(str);
+                        } else if (data.slice(0,2)=="ID") {
+                            //signal used to identify viewer user data
+                            tempData = JSON.parse(data.slice(2));
+                            users[c_count].data = tempData;
                         }
                     });
                     connections[c_count].conn.on('close', function () {
@@ -99,7 +146,7 @@ temporal.paused = false;
 
                     r_conn.on('open', function () {
                         document.getElementById("status").innerHTML = "Listener: connected to host";
-                        console.log("Connected to: " + r_conn.peer.id);
+                        console.log("Connected to: " + r_conn.peer.slice(16));
                         r_conn.send("CMrequestsync");
                         document.getElementById("page_receiver_msg").innerHTML = "Connected: " + r_conn.peer.slice(16);
                         periodic_check();
@@ -126,6 +173,7 @@ temporal.paused = false;
                             //message
                             str = data.slice(2);
                             addMessage(str);    
+                            messages += "<div><span class='chatbox_author_else'>Host: </span>" + str + "</div>";
                         } else if (data.slice(0,2) == "CP") {
                             str = data.slice(2);
                             document.getElementById("timer_display").innerText = str;
@@ -145,14 +193,16 @@ function init(value) {
     if (value == 0) {
         document.getElementById("page_admin").style.display = "block";
         document.getElementById("page_start").style.display = "none";
-        document.getElementById("page_msg").style.display = "block";
+        //document.getElementById("page_msg").style.display = "block";
+        document.getElementById("page_admincontrols").style.display = "block";
         document.getElementById("div_timer_controls").style.display = "flex";
         document.getElementById("status").innerHTML = "Host: await connection";
         mode = 0;
     } else {
         document.getElementById("page_receiver").style.display = "block";
         document.getElementById("page_start").style.display = "none";
-        document.getElementById("page_msg").style.display = "block";
+        //document.getElementById("page_msg").style.display = "block";
+        document.getElementById("page_admincontrols").style.display = "none";
         document.getElementById("div_timer_controls").style.display = "none";
         document.getElementById("status").innerHTML = "Viewer: await connection";
         mode = 1;
@@ -174,7 +224,7 @@ function addMessage(param2,param1) {
 function init_receiver() {
     //get id
     inputvalue = document.getElementById("senderID").value;
-    join("osce-timer-host-" + inputvalue);
+    join("osce-timer-user-" + inputvalue);
 }
 
 function update() { //OBSOLETE
@@ -187,6 +237,7 @@ function update() { //OBSOLETE
 function periodic_sync() {
     sender_sync();
     sender_label();
+    sender_displayusers();
 }
 
 function display_timer() {
@@ -299,7 +350,7 @@ function loadURL() {
         } else {
             console.log(inputString);
             addMessage("Auto-connected via URL command.")
-            join("osce-timer-host-" + inputString);
+            join("osce-timer-user-" + inputString);
             init(2);
         }
     }
@@ -405,7 +456,7 @@ function start_stopwatch(distance) {
         document.getElementById("pausebutton").style.display = "flex";
         document.getElementById("resetbutton").style.display = "flex";
         document.getElementById("fullscreenbutton").style.display = "flex";
-        document.getElementById("div_label_input").style.display = "block";
+        document.getElementById("div_label_input").style.display = "flex";
         document.getElementById("div_label_output").style.display = "none";
         sender_label();
     }
@@ -464,6 +515,9 @@ function reset_action() {
         document.getElementById("resetbutton").style.display = "none";
         document.getElementById("fullscreenbutton").style.display = "none";
     }
+    document.getElementById("label_input").value = "";
+    document.getElementById("div_label_input").style.display = "none";
+    document.getElementById("div_label_output").style.display = "none";
 }
 
 function testsend1() {
@@ -476,7 +530,7 @@ function fullscreen() {
         document.getElementById("status").style.display = "none";
         if (mode == 1) document.getElementById("page_receiver").style.display = "none";
         if (mode == 0) document.getElementById("page_admin").style.display = "none";
-        document.getElementById("page_msg").style.display = "none";
+        //document.getElementById("page_msg").style.display = "none";
         document.getElementById("div_timer").classList.add("FS");
         isFullscreen = true;
         if (document.documentElement.requestFullscreen != undefined) {
@@ -498,7 +552,7 @@ function fullscreen() {
                 if (mode == 1) document.getElementById("page_receiver").style.display = "block";
                 if (mode == 0) document.getElementById("page_admin").style.display = "block";
                 document.getElementById("status").style.display = "block";
-                document.getElementById("page_msg").style.display = "block";
+                //document.getElementById("page_msg").style.display = "block";
                 document.getElementById("div_timer").classList.remove("FS");
         if (document.exitFullscreen != undefined) {
         document.exitFullscreen()
@@ -531,11 +585,16 @@ function check_status2() {
 }
 function check_status() {
     status = r_conn.peerConnection.iceConnectionState;
-    if (status === 'connected' || status === 'completed') {
-        return true;
+    if (r_conn != null) {
+        if (status === 'connected' || status === 'completed') {
+            return true;
+        } else {
+            return false;
+        }
     } else {
         return false;
     }
+
 }
 function genID() {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -556,7 +615,6 @@ function sender_label_debounce() {
 
 function sender_label() {
     str = document.getElementById("label_input").value;
-    console.log(str);
         if (connections.length>0) {
             connections.forEach((el) => {
                 if (el.conn != null) 
@@ -565,4 +623,100 @@ function sender_label() {
                     }
                 })
             }
+}
+
+function sender_poll() {
+        if (connections.length>0) {
+            connections.forEach((el,index) => {
+                if (el.conn != null) {
+                        status = el.conn.peerConnection.iceConnectionState;
+                        if (status === 'connected' || status === 'completed') {
+                            online = true;
+                        } else {
+                            online = false;
+                        }
+                        users[index].online = online;
+                } else {
+                    users[index].online = false;
+                }
+            });
+        }
+}
+
+function sender_displayusers() {
+    el1 = document.getElementById("div_userslist");
+    el1.innerHTML = "";
+    sender_poll();
+    for (i=0;i<users.length;i++) {
+        if (users[i].online) {
+            el2 = document.createElement("a");
+            el2.setAttribute('class','button tinybutton');
+            el2.setAttribute('id','userbox'+users[i].id);
+            el2.setAttribute('onclick','chatbox(' + i +')');
+            if (users[i].data == undefined) {
+                el2.innerHTML = users[i].id;
+            } else {
+                el2.innerHTML = users[i].data.alias;    
+            }
+            el1.appendChild(el2);
+        }
+    }
+}
+
+aliasTimeout = null;
+function updatereceiverdata() {
+    alias = document.getElementById("viewerID").value;
+    dataobj = {};
+    dataobj.alias = alias;
+    datastring = JSON.stringify(dataobj);
+    clearTimeout(aliasTimeout);
+    aliasTimeout = setTimeout(function() {
+        r_conn.send("ID" + datastring);
+    },1000);
+}
+
+function chatbox(param,isViewer) {
+    if (!isViewer) {
+        if (users[param].data == undefined) {
+            tempalias = users[param].id;
+        } else {
+            tempalias = users[param].data.alias;    
+        }
+        messagelist = users[param].messages;    
+        tempHTML = `
+            <div>${messagelist}</div>
+            <div>
+                <input class='chatbox_input' id='chatbox_input_msg${param}'>
+                <a class='button invert right' onclick='chatbox_sendmsg(${param})'>Send</a>
+            </div>
+        `;
+        displayDialog('Chat with ' + tempalias,tempHTML);
+    } else {
+        tempHTML = `
+            <div>${messages}</div>
+            <div>
+                <input class='chatbox_input' id='chatbox_input_msg'>
+                <a class='button invert right' onclick='chatbox_sendmsg(0,true)'>Send</a>
+            </div>
+        `;
+        displayDialog('Chat with host',tempHTML);
+    }
+}
+
+function chatbox_sendmsg(param,isViewer) {
+    if (!isViewer) {
+        str = document.getElementById("chatbox_input_msg" + param).value;
+        if (users[param].messages == undefined) users[param].messages = "";
+        if (connections[param].conn.open) {
+            connections[param].conn.send("MS" + str);
+            users[param].messages += '<div><span class="chatbox_author_self">Host: </span>' + str + '</div>';
+        }        
+    } else {
+        str = document.getElementById("chatbox_input_msg").value;
+        if (r_conn.open) {
+            r_conn.send("MS" + str);
+            messages += '<div><span class="chatbox_author_self">' + alias + ": </span>" + str + '</div>';
+        } 
+    }
+    hidemodal('modalDialog');
 }
