@@ -529,7 +529,10 @@ function fullscreen() {
     if (!isFullscreen) {
         document.getElementById("status").style.display = "none";
         if (mode == 1) document.getElementById("page_receiver").style.display = "none";
-        if (mode == 0) document.getElementById("page_admin").style.display = "none";
+        if (mode == 0) {
+            document.getElementById("page_admin").style.display = "none";
+            document.getElementById("page_admincontrols").style.display = "none";
+        }
         //document.getElementById("page_msg").style.display = "none";
         document.getElementById("div_timer").classList.add("FS");
         isFullscreen = true;
@@ -551,6 +554,7 @@ function fullscreen() {
                 isFullscreen = false;
                 if (mode == 1) document.getElementById("page_receiver").style.display = "block";
                 if (mode == 0) document.getElementById("page_admin").style.display = "block";
+                if (mode == 0) document.getElementById("page_admincontrols").style.display = "flex";
                 document.getElementById("status").style.display = "block";
                 //document.getElementById("page_msg").style.display = "block";
                 document.getElementById("div_timer").classList.remove("FS");
@@ -628,6 +632,7 @@ function sender_label() {
 function sender_poll() {
         if (connections.length>0) {
             connections.forEach((el,index) => {
+                online = false;
                 if (el.conn != null) {
                         status = el.conn.peerConnection.iceConnectionState;
                         if (status === 'connected' || status === 'completed') {
