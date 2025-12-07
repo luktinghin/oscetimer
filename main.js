@@ -16,10 +16,16 @@ temporal.distance = 0;
 temporal.firstrun = -1;
 temporal.paused = false;
 var users = new Array();
+var online_count = 0;
 //for self, viewer
 var messages = "";
 var alias;
 
+if (!navigator.canShare) {
+    document.getElementById("sharelinkbutton").style.display="none";
+} else {
+    document.getElementById("copylinkbutton").style.display="none";
+}
 
 function displayDialog(dialogTitle, dialogContent) {
     const ElTitle = document.querySelector("#modalDialog .title");
@@ -112,10 +118,11 @@ function hidemodal(param) {
                             str = data.slice(2);
                             console.log("Data received from peer " + connections[c_count].conn.peer);
                             addMessage(str,"Peer #" + c_count);
+                            timestr = formattime(new Date());
                             if (users[c_count].data != undefined) {
-                                users[c_count].messages += "<div><span class='chatbox_author_else'>" + users[c_count].data.alias + ": </span>" + str + "</div>";
+                                users[c_count].messages += "<div><span class='timestamp'>" + timestr + "</span<span class='chatbox_author_else'>" + users[c_count].data.alias + ": </span>" + str + "</div>";
                             } else {
-                                users[c_count].messages += "<div><span class='chatbox_author_else'>" + users[c_count].id + ": </span>" + str + "</div>";
+                                users[c_count].messages += "<div><span class='timestamp'>" + timestr + "</span><span class='chatbox_author_else'>" + users[c_count].id + ": </span>" + str + "</div>";
                             }
                             
                         } else if (data.slice(0,2)=="CM") {
@@ -173,7 +180,8 @@ function hidemodal(param) {
                             //message
                             str = data.slice(2);
                             addMessage(str);    
-                            messages += "<div><span class='chatbox_author_else'>Host: </span>" + str + "</div>";
+                            timestr = formattime(new Date());
+                            messages += "<div><span class='timestamp'>" + timestr + "</span><span class='chatbox_author_else'>Host: </span>" + str + "</div>";
                         } else if (data.slice(0,2) == "CP") {
                             str = data.slice(2);
                             document.getElementById("timer_display").innerText = str;
@@ -225,6 +233,9 @@ function init_receiver() {
     //get id
     inputvalue = document.getElementById("senderID").value;
     join("osce-timer-user-" + inputvalue);
+    if (document.getElementById("viewerID").value != "") {
+        updatereceiverdata();
+    }
 }
 
 function update() { //OBSOLETE
@@ -456,7 +467,7 @@ function start_stopwatch(distance) {
         document.getElementById("pausebutton").style.display = "flex";
         document.getElementById("resetbutton").style.display = "flex";
         document.getElementById("fullscreenbutton").style.display = "flex";
-        document.getElementById("div_label_input").style.display = "flex";
+        document.getElementById("div_label_input").style.display = "block";
         document.getElementById("div_label_output").style.display = "none";
         sender_label();
     }
@@ -515,9 +526,6 @@ function reset_action() {
         document.getElementById("resetbutton").style.display = "none";
         document.getElementById("fullscreenbutton").style.display = "none";
     }
-    document.getElementById("label_input").value = "";
-    document.getElementById("div_label_input").style.display = "none";
-    document.getElementById("div_label_output").style.display = "none";
 }
 
 function testsend1() {
@@ -554,7 +562,7 @@ function fullscreen() {
                 isFullscreen = false;
                 if (mode == 1) document.getElementById("page_receiver").style.display = "block";
                 if (mode == 0) document.getElementById("page_admin").style.display = "block";
-                if (mode == 0) document.getElementById("page_admincontrols").style.display = "flex";
+                if (mode == 0) document.getElementById("page_admincontrols").style.display = "block";
                 document.getElementById("status").style.display = "block";
                 //document.getElementById("page_msg").style.display = "block";
                 document.getElementById("div_timer").classList.remove("FS");
@@ -590,8 +598,12 @@ function check_status2() {
 function check_status() {
     status = r_conn.peerConnection.iceConnectionState;
     if (r_conn != null) {
-        if (status === 'connected' || status === 'completed') {
-            return true;
+        if (r_conn.peerConnection != null) {
+            if (status === 'connected' || status === 'completed') {
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
@@ -630,17 +642,23 @@ function sender_label() {
 }
 
 function sender_poll() {
+    online_count = 0;
         if (connections.length>0) {
             connections.forEach((el,index) => {
                 online = false;
                 if (el.conn != null) {
+                    if (el.conn.peerConnection != null) {
                         status = el.conn.peerConnection.iceConnectionState;
                         if (status === 'connected' || status === 'completed') {
                             online = true;
+                            online_count += 1;
                         } else {
                             online = false;
                         }
                         users[index].online = online;
+                    } else {
+                        users[index].online = false;
+                    }
                 } else {
                     users[index].online = false;
                 }
@@ -666,6 +684,7 @@ function sender_displayusers() {
             el1.appendChild(el2);
         }
     }
+    document.getElementById("status_count").innerHTML = online_count + " users online";
 }
 
 aliasTimeout = null;
@@ -689,18 +708,18 @@ function chatbox(param,isViewer) {
         }
         messagelist = users[param].messages;    
         tempHTML = `
-            <div>${messagelist}</div>
-            <div>
-                <input class='chatbox_input' id='chatbox_input_msg${param}'>
-                <a class='button invert right' onclick='chatbox_sendmsg(${param})'>Send</a>
+            <div class='chatbox_messages'>${messagelist}</div>
+            <div class='chatbox_input_outer'>
+                <textarea class='chatbox_input' id='chatbox_input_msg${param}'></textarea>
+                <a class='button invert right' id="chatbox_send" onclick='chatbox_sendmsg(${param})'>Send</a>
             </div>
         `;
         displayDialog('Chat with ' + tempalias,tempHTML);
     } else {
         tempHTML = `
-            <div>${messages}</div>
-            <div>
-                <input class='chatbox_input' id='chatbox_input_msg'>
+            <div class="chatbox_messages">${messages}</div>
+            <div class='chatbox_input_outer'>
+                <textarea class='chatbox_input' id='chatbox_input_msg'></textarea>
                 <a class='button invert right' onclick='chatbox_sendmsg(0,true)'>Send</a>
             </div>
         `;
@@ -709,19 +728,35 @@ function chatbox(param,isViewer) {
 }
 
 function chatbox_sendmsg(param,isViewer) {
+    dateobj = new Date();
+    timestr = formattime(dateobj);
     if (!isViewer) {
+        //sender is host
         str = document.getElementById("chatbox_input_msg" + param).value;
         if (users[param].messages == undefined) users[param].messages = "";
         if (connections[param].conn.open) {
             connections[param].conn.send("MS" + str);
-            users[param].messages += '<div><span class="chatbox_author_self">Host: </span>' + str + '</div>';
+            users[param].messages += "<div><span class='timestamp'>" + timestr + "</span>" + '<span class="chatbox_author_self">Host: </span>' + str + '</div>';
         }        
     } else {
+        //sender is viewer
         str = document.getElementById("chatbox_input_msg").value;
+        if (alias == undefined) {
+            tempalias = "Self"
+        } else {
+            tempalias = alias;
+        }
         if (r_conn.open) {
             r_conn.send("MS" + str);
-            messages += '<div><span class="chatbox_author_self">' + alias + ": </span>" + str + '</div>';
+            messages += "<div><span class='timestamp'>" + timestr + "</span>" + '<span class="chatbox_author_self">' + tempalias + ": </span>" +  str + '</div>';
         } 
     }
     hidemodal('modalDialog');
+}
+
+function formattime(param) {
+        HH = (param.getHours() < 10) ? "0" + param.getHours() : param.getHours();
+        MinMin = (param.getMinutes() < 10) ? "0" + param.getMinutes() : param.getMinutes();
+        temp = HH + ":" + MinMin;
+        return temp;
 }

@@ -412,6 +412,48 @@ a.button.tinybutton > i {
 	border-bottom: 1px solid #555;
 }
 
+.head-title {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:0.8rem;
+  font-weight:bold;
+  text-transform:uppercase;
+}
+
+.head-left {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border-bottom:1px solid #555;
+}
+
+.head-right {
+  display:flex;
+  align-items:center;
+  gap:20px;
+  border-bottom:1px solid #555;
+}
+
+.titlenumber {
+  font-size:2rem;
+  font-weight:bold;
+  width:50px;
+  height:50px;
+  border-radius:9rem;
+  background:#555;
+  color:white;
+  text-align:center;
+  padding-top:3px;
+}
+#div_iddisplay {
+  padding-left:0px;
+}
+#div_label {
+  padding-left:0px;
+  flex-grow:1;
+}
 #div_timer {
 	display:none;
 	justify-content:center;
@@ -445,7 +487,7 @@ a.button.tinybutton > i {
 #div_timer_controls_receiver {
   display:none;
   width:75%;
-  justify-content:flex-end;
+  justify-content:space-between;
   gap:10px;
 }
 
@@ -462,7 +504,11 @@ a.button.tinybutton > i {
   color:red;
 }
 
-
+#div_usermx_controls {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
 
 /*modal css*/
 .modal {
@@ -552,8 +598,6 @@ a.button.tinybutton > i {
 }
 
 .modal-body {
-  padding:12px;
-  padding-bottom:20px;
   overflow-y:auto; 
   max-height: 70dvh;
 }
@@ -565,12 +609,50 @@ a.button.tinybutton > i {
   max-height: 81dvh;
 }
 
+.timestamp {
+  display: inline-block;
+  border-radius: 2rem;
+  margin-right: 0.4rem;
+  margin-left: 0.4rem;
+  border: 1px solid white;
+  font-size: 78%;
+  min-width: 40px;
+  text-align: center;
+  white-space: nowrap;
+  background: #eee;
+}
+
+.chatbox_messages {
+  border-bottom:1px solid #999;
+  min-height:150px;
+  max-height:50vh;
+  overflow-y:scroll;
+  padding:10px;
+}
+
+.chatbox_input_outer {
+  display:flex;
+  padding:10px;
+  background:#ddd;
+  align-items:start;
+  gap:10px;
+  border-radius:0 0 16px 16px;
+}
+
 .chatbox_input {
-  width:100%;
-  border:1px solid #ccc;
+  width:calc(100% - 90px);
+  border:1px solid #999;
   color:black;
   background:white;
   text-align:left;
+  font-family:  "SourceSans", "Avenir", "Calibri", "Trebuchet MS", "Lucida Sans", sans-serif;
+  height:45px;
+  resize:none;
+}
+
+#chatbox_send {
+  min-width:80px;
+  margin-right:0px;
 }
 
 .chatbox_author_self {
@@ -602,5 +684,15 @@ a.button.tinybutton > i {
   }
   .section {
     padding:5px 0;
+  }
+
+}
+@media (min-width:600px) {
+  .section_split {
+    display:flex;
+    gap:10px;
+  }
+  .head-left, .head-right {
+    flex-basis:50%;
   }
 }

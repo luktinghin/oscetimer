@@ -32,13 +32,33 @@
 			</div>
 		</div>
 		<div id="page_admin">
-			<div class="section line" id="div_iddisplay">
-				<div style="font-size:0.8rem;text-align:center; padding-bottom:5px">My ID: <span id="ownID" style="font-weight:bold"></span></div>
-			<div style="text-align:center">
-					<a class="button tinybutton" onclick="sharefunction2()">Share link</a>
-					<a class="button tinybutton" onclick="copyfunction2(true)">Copy link</a>
-					<a class="button tinybutton" onclick="copyfunction2(false)">Copy ID</a>
-			</div>
+			<div class="section_split">
+				<div class="section head-left">
+					<div class="head-title">
+						<div class="titlenumber">1</div>
+						<div>Step 1</div>
+					</div>
+					<div id="div_label">
+						<div id="div_label_input" style="">
+							<div style="font-size:0.8rem">Title of timer:</div>
+							<input id="label_input" oninput="sender_label_debounce()" placeholder="untitled timer" style="text-align:left; width:100%">
+						</div>
+					</div>
+				</div>
+				<div class="section head-right">
+					<div class="head-title">
+						<div class="titlenumber">2</div>
+						<div>Step 2</div>
+					</div>
+					<div id="div_iddisplay">
+						<div style="font-size:0.8rem;padding-bottom:5px">My ID: <span id="ownID" style="font-weight:bold"></span></div>
+						<div>
+						<a class="button tinybutton" id="sharelinkbutton" onclick="sharefunction2()">Share link</a>
+						<a class="button tinybutton" id="copylinkbutton" onclick="copyfunction2(true)">Copy link</a>
+						<a class="button tinybutton" onclick="copyfunction2(false)">Copy ID</a>
+						</div>
+					</div>
+				</div>
 			</div>
 			<div class="section">
 				<div style="display:flex;align-items:center;justify-content:center;gap:1rem; height:100px">
@@ -77,20 +97,20 @@
 			</div>
 		</div>
 		<div id="page_receiver">
-			<div class="section line" id="page_receiver_1" style="display:flex;align-items:center;justify-content:center;gap:10px">
-				<div>Host ID:</div>
+			<div class="section line" id="page_receiver_1" style="display:flex;align-items:center;gap:10px">
+				<div style="flex-basis:80px">Host ID:</div>
 				<div>
-					<input id="senderID">
+					<input id="senderID" style="width:100px">
 					<a class="button tinybutton" id="submitID" onclick="init_receiver()">Submit</a>
 				</div>
 			</div>
 			<div class="section line" id="page_receiver_2" style="display:none">
 				<div id="page_receiver_msg" style="font-size:0.8rem;color:#666"></div>
 			</div>
-			<div class="section" id="page_receiver_alias" style="display:flex;align-items:center;justify-content:center;gap:10px">
-				<div>Alias:</div>
+			<div class="section" id="page_receiver_alias" style="display:flex;align-items:center;gap:10px">
+				<div style="flex-basis:80px">Username:</div>
 				<div>
-					<input id="viewerID" oninput="updatereceiverdata();">
+					<input id="viewerID" oninput="updatereceiverdata();" placeholder="Name to identify yourself" style="text-align:left;min-width:200px">
 				</div>
 			</div>
 		</div>
@@ -113,29 +133,29 @@
 						<a class="button tinybutton">Fullscreen</a>
 					</div>
 			</div>
-			<div id="div_timer_controls_receiver"  >
-				<a class="button tinybutton" onclick="chatbox(0,true)"><i class="fas fa-comment-alt"></i>Chat</a>
-				<a class="button tinybutton" onclick="fullscreen();"><i class="fas fa-expand"></i>Fullscreen</a>
+			<div id="div_timer_controls_receiver">
+				<div id="div_label_output" style="padding-left:16px"></div>
+				<div>
+					<a class="button tinybutton" onclick="chatbox(0,true)" style="margin-right:10px"><i class="fas fa-comment-alt"></i>Chat</a>
+					<a class="button tinybutton" onclick="fullscreen();"><i class="fas fa-expand"></i>Fullscreen</a>
+				</div>
 			</div>
 			<div id="div_timer_inner">
 				<div id="timer_status">Countdown is running:</div>
 				<div id="timer_display"></div>
 			</div>
-			<div id="div_label_output"></div>
+			
 		</div>
 		<div id="page_admincontrols">
 			<div style="text-align:center;font-weight:bold">USER MANAGEMENT</div>
-			<div id="div_label" class="section line">
-				<div id="div_label_input" style="display:flex;justify-content:center;align-items:center;gap:10px">
-					<div>Label</div>
-					<input id="label_input" oninput="sender_label_debounce()">
+			<div  class="section line" id="div_usermx_controls">
+				<div id="status_count"></div>
+				<div>
+					<a class="button tinybutton" onclick="sender_displayusers();">Update</a>
 				</div>
 			</div>
-			<div  class="section line">
-				<a class="button tinybutton" onclick="sender_displayusers();">Users update</a>
-			</div>
 			<div style="display:flex;align-items:center;gap:10px"  class="section">
-				<div>Connected to: </div>
+				<div>Quick chat: </div>
 				<div id="div_userslist">
 				</div>
 			</div>
