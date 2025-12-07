@@ -515,7 +515,7 @@ a.button.tinybutton > i {
     display: block; 
     position: fixed; 
     z-index:98;
-    padding-top: 15vh; 
+    padding-top: 10vh; 
     left: 0;
     top: 0;
     width: 100%; 
@@ -545,7 +545,7 @@ a.button.tinybutton > i {
   border-radius: 15px;
   border: 1px solid #fff;
       
-    width: 85%;
+    width: 88%;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.4),0 6px 20px 0 rgba(0,0,0,0.19), inset 0px -4px 0px 0 rgba(0,0,0,0.15);
     -webkit-transform: translateY(-150%);
     transform: translateY(-150%);
@@ -614,12 +614,12 @@ a.button.tinybutton > i {
   border-radius: 2rem;
   margin-right: 0.4rem;
   margin-left: 0.4rem;
-  border: 1px solid white;
+  border: 1px solid #aaa;
   font-size: 78%;
   min-width: 40px;
   text-align: center;
   white-space: nowrap;
-  background: #eee;
+  background: #ddd;
 }
 
 .chatbox_messages {

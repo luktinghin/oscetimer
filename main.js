@@ -120,7 +120,7 @@ function hidemodal(param) {
                             addMessage(str,"Peer #" + c_count);
                             timestr = formattime(new Date());
                             if (users[c_count].data != undefined) {
-                                users[c_count].messages += "<div><span class='timestamp'>" + timestr + "</span<span class='chatbox_author_else'>" + users[c_count].data.alias + ": </span>" + str + "</div>";
+                                users[c_count].messages += "<div><span class='timestamp'>" + timestr + "</span><span class='chatbox_author_else'>" + users[c_count].data.alias + ": </span>" + str + "</div>";
                             } else {
                                 users[c_count].messages += "<div><span class='timestamp'>" + timestr + "</span><span class='chatbox_author_else'>" + users[c_count].id + ": </span>" + str + "</div>";
                             }
@@ -737,7 +737,8 @@ function chatbox_sendmsg(param,isViewer) {
         if (connections[param].conn.open) {
             connections[param].conn.send("MS" + str);
             users[param].messages += "<div><span class='timestamp'>" + timestr + "</span>" + '<span class="chatbox_author_self">Host: </span>' + str + '</div>';
-        }        
+        }
+        document.querySelector(".chatbox_messages").innerHTML = users[param].messages;        
     } else {
         //sender is viewer
         str = document.getElementById("chatbox_input_msg").value;
@@ -750,8 +751,10 @@ function chatbox_sendmsg(param,isViewer) {
             r_conn.send("MS" + str);
             messages += "<div><span class='timestamp'>" + timestr + "</span>" + '<span class="chatbox_author_self">' + tempalias + ": </span>" +  str + '</div>';
         } 
+        document.querySelector(".chatbox_messages").innerHTML = messages;
     }
-    hidemodal('modalDialog');
+    //hidemodal('modalDialog');
+
 }
 
 function formattime(param) {
