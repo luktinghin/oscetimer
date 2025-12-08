@@ -110,7 +110,7 @@
 			<div class="section" id="page_receiver_alias" style="display:flex;align-items:center;gap:10px">
 				<div style="flex-basis:80px">Username:</div>
 				<div>
-					<input id="viewerID" oninput="updatereceiverdata();" placeholder="Name to identify yourself" style="text-align:left;min-width:200px">
+					<input id="viewerID" oninput="updatereceiverdata();" placeholder="Enter a name to start" style="text-align:left;min-width:200px">
 				</div>
 			</div>
 		</div>
@@ -133,18 +133,18 @@
 						<a class="button tinybutton">Fullscreen</a>
 					</div>
 			</div>
-			<div id="div_timer_controls_receiver">
-				<div id="div_label_output" style="padding-left:16px"></div>
-				<div>
-					<a class="button tinybutton" onclick="chatbox(0,true)" style="margin-right:10px"><i class="fas fa-comment-alt"></i>Chat</a>
-					<a class="button tinybutton" onclick="fullscreen();"><i class="fas fa-expand"></i>Fullscreen</a>
-				</div>
-			</div>
+			<div id="div_label_output" style="padding-left:16px;text-align:left"></div>
 			<div id="div_timer_inner">
 				<div id="timer_status">Countdown is running:</div>
 				<div id="timer_display"></div>
 			</div>
-			
+			<div id="div_timer_controls_receiver">
+				<div id="incomingmessage"></div>
+				<div style="display:flex;white-space:nowrap">
+					<a class="button tinybutton" onclick="chatbox(0,true)" style="margin-right:10px"><i class="fas fa-comment-alt"></i>Chat</a>
+					<a class="button tinybutton" onclick="fullscreen();"><i class="fas fa-expand"></i>Fullscreen</a>
+				</div>
+			</div>
 		</div>
 		<div id="page_admincontrols">
 			<div style="text-align:center;font-weight:bold">USER MANAGEMENT</div>

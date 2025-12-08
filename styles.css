@@ -489,6 +489,15 @@ a.button.tinybutton > i {
   width:75%;
   justify-content:space-between;
   gap:10px;
+  align-items:center;
+}
+
+#incomingmessage {
+  padding-left:16px;
+  white-space:nowrap;
+  overflow-x:hidden;
+  text-overflow:ellipsis;
+  font-size:0.8rem;
 }
 
 #timer_display {
@@ -609,6 +618,7 @@ a.button.tinybutton > i {
   max-height: 81dvh;
 }
 
+/*
 .timestamp {
   display: inline-block;
   border-radius: 2rem;
@@ -620,6 +630,47 @@ a.button.tinybutton > i {
   text-align: center;
   white-space: nowrap;
   background: #ddd;
+}
+*/
+
+.chatbox_chat_self {
+  display:flex;
+  width:80%;
+  margin-left:auto;
+  flex-direction:column;
+  align-items:flex-end;
+  padding:4px 0;
+}
+
+.chatbox_chat_else {
+  display:flex;
+  width:80%;
+  margin-right:auto;
+  flex-direction:column;
+  align-items:flex-start;
+  padding:4px 0;
+}
+
+.chatbox_chat_head {
+  font-size:0.65rem;
+  color:#999;
+}
+
+.chatbox_chat_contents {
+  font-size:0.85rem;
+  border-radius:9px;
+  background:#eee;
+  border:1px solid #ccc;
+  white-space:pre-wrap;
+  padding:0 9px;
+}
+
+.chatbox_chat_self .chatbox_chat_head {
+  text-align:right;
+}
+
+.chatbox_chat_self .chatbox_chat_contents {
+  text-align:right;
 }
 
 .chatbox_messages {
@@ -687,10 +738,11 @@ a.button.tinybutton > i {
   }
 
 }
-@media (min-width:600px) {
+@media (min-width:768px) {
   .section_split {
     display:flex;
-    gap:10px;
+    gap:30px;
+    padding:15px;
   }
   .head-left, .head-right {
     flex-basis:50%;

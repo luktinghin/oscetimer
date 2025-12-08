@@ -120,11 +120,22 @@ function hidemodal(param) {
                             addMessage(str,"Peer #" + c_count);
                             timestr = formattime(new Date());
                             if (users[c_count].data != undefined) {
-                                users[c_count].messages += "<div><span class='timestamp'>" + timestr + "</span><span class='chatbox_author_else'>" + users[c_count].data.alias + ": </span>" + str + "</div>";
+                                tempalias = users[c_count].data.alias;
                             } else {
-                                users[c_count].messages += "<div><span class='timestamp'>" + timestr + "</span><span class='chatbox_author_else'>" + users[c_count].id + ": </span>" + str + "</div>";
+                                tempalias = users[c_count].id;
                             }
-                            
+                            users[c_count].messages += `
+                                <div class="chatbox_chat_else">
+                                    <div class="chatbox_chat_head">
+                                        <span class="chatbox_author_else">${tempalias}</span>&nbsp;&bull;&nbsp;<span class="timestamp">${timestr}</span>
+                                    </div>
+                                    <div class="chatbox_chat_contents">${str}</div>
+                                </div>
+                            `;
+                            if (modal!=undefined) {
+                                document.querySelector(".chatbox_messages").innerHTML = users[c_count].messages;    
+                                document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
+                            }
                         } else if (data.slice(0,2)=="CM") {
                             str = data.slice(2);
                             receiver_parsecommand(str);
@@ -181,7 +192,19 @@ function hidemodal(param) {
                             str = data.slice(2);
                             addMessage(str);    
                             timestr = formattime(new Date());
-                            messages += "<div><span class='timestamp'>" + timestr + "</span><span class='chatbox_author_else'>Host: </span>" + str + "</div>";
+                            messages += `
+                                <div class="chatbox_chat_else">
+                                    <div class="chatbox_chat_head">
+                                        <span class="chatbox_author_else">Host</span>&nbsp;&bull;&nbsp;<span class="timestamp">${timestr}</span>
+                                    </div>
+                                    <div class="chatbox_chat_contents">${str}</div>
+                                </div>
+                            `;
+                            document.getElementById("incomingmessage").innerHTML = str;
+                            if (modal!=undefined) {
+                                document.querySelector(".chatbox_messages").innerHTML = messages;
+                                document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
+                            }
                         } else if (data.slice(0,2) == "CP") {
                             str = data.slice(2);
                             document.getElementById("timer_display").innerText = str;
@@ -339,6 +362,7 @@ function receiver_parsecommand(param) {
         //this is received from receiver requesting sync
         sender_sync();
         sender_label();
+        sender_displayusers();
     }
 }
 
@@ -725,6 +749,7 @@ function chatbox(param,isViewer) {
         `;
         displayDialog('Chat with host',tempHTML);
     }
+    document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
 }
 
 function chatbox_sendmsg(param,isViewer) {
@@ -736,9 +761,18 @@ function chatbox_sendmsg(param,isViewer) {
         if (users[param].messages == undefined) users[param].messages = "";
         if (connections[param].conn.open) {
             connections[param].conn.send("MS" + str);
-            users[param].messages += "<div><span class='timestamp'>" + timestr + "</span>" + '<span class="chatbox_author_self">Host: </span>' + str + '</div>';
+            users[param].messages += `
+                <div class="chatbox_chat_self">
+                    <div class="chatbox_chat_head">
+                        <span class="chatbox_author_self">Host</span>&nbsp;&bull;&nbsp;<span class="timestamp">${timestr}</span>
+                    </div>
+                    <div class="chatbox_chat_contents">${str}</div>
+                </div>
+            `;
         }
-        document.querySelector(".chatbox_messages").innerHTML = users[param].messages;        
+        document.querySelector(".chatbox_messages").innerHTML = users[param].messages;    
+        document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
+        document.getElementById("chatbox_input_msg" + param).value = "";    
     } else {
         //sender is viewer
         str = document.getElementById("chatbox_input_msg").value;
@@ -749,12 +783,19 @@ function chatbox_sendmsg(param,isViewer) {
         }
         if (r_conn.open) {
             r_conn.send("MS" + str);
-            messages += "<div><span class='timestamp'>" + timestr + "</span>" + '<span class="chatbox_author_self">' + tempalias + ": </span>" +  str + '</div>';
+            messages += `
+                <div class="chatbox_chat_self">
+                    <div class="chatbox_chat_head">
+                        <span class="chatbox_author_self">${tempalias}</span>&nbsp;&bull;&nbsp;<span class="timestamp">${timestr}</span>
+                    </div>
+                    <div class="chatbox_chat_contents">${str}</div>
+                </div>
+            `;
         } 
         document.querySelector(".chatbox_messages").innerHTML = messages;
+        document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
+        document.getElementById("chatbox_input_msg").value = "";    
     }
-    //hidemodal('modalDialog');
-
 }
 
 function formattime(param) {
