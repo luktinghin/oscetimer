@@ -51,7 +51,7 @@
 						<div>Step 2</div>
 					</div>
 					<div id="div_iddisplay">
-						<div style="font-size:0.8rem;padding-bottom:5px">My ID: <span id="ownID" style="font-weight:bold"></span></div>
+						<div style="font-size:0.8rem;padding-bottom:5px">Session ID: <span id="ownID" style="font-weight:bold"></span></div>
 						<div>
 						<a class="button tinybutton" id="sharelinkbutton" onclick="sharefunction2()">Share link</a>
 						<a class="button tinybutton" id="copylinkbutton" onclick="copyfunction2(true)">Copy link</a>
@@ -173,7 +173,11 @@
 				<div class="modal-body alt">OSCETimer is loading up...</div>
 			</div>
 		</div>
+		<div id="helpicon" onclick="displayAbout();">
+			<i class="fas fa-question-circle"></i>
+		</div>
 </body>
 <script src="main.js"></script>
+<script src="index.js"></script>
 <script src="https://unpkg.com/peerjs@1.5.0/dist/peerjs.min.js"></script>
 <script>initialize()</script>

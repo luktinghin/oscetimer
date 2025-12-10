@@ -221,6 +221,7 @@ function hidemodal(param) {
 
 function init(value) {
     document.getElementById("status").style.display = "block";
+    document.getElementById("helpicon").classList.add("transform");
     if (value == 0) {
         document.getElementById("page_admin").style.display = "block";
         document.getElementById("page_start").style.display = "none";

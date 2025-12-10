@@ -721,6 +721,50 @@ a.button.tinybutton > i {
   gap:10px;
 }
 
+.dc-heading {
+  font-family: "Brandon Text", "Avenir", "SourceSans", "Calibri", "Trebuchet MS", "Lucida Sans", sans-serif;
+  font-size:1.2rem;
+  font-weight:bold;
+  color:#198964;
+  padding: 6px 0;
+}
+
+.dc-subheading {
+  border-left:2px solid #198964;
+  background: #eee;
+  color:#198964;
+  font-size:0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding:0 0 0 10px;
+  margin:6px 0;
+  font-weight:bold;
+}
+
+.dc-para {
+  font-size:0.9rem;
+  padding:6px 0 6px 10px;
+}
+
+#helpicon {
+  position:absolute;
+  left:calc(50% - 20px);
+  bottom:20px;
+  color:#555;
+  width:40px;
+  text-align:center;
+  font-size:30px;
+  cursor:pointer;
+}
+
+#helpicon.transform {
+  right:0px;
+  top:8px;
+  font-size:21px;
+  left:auto;
+  bottom:auto;
+}
+
 @media (max-width:599px) {
 	#page_start_inner {
 		width:100%;
@@ -734,7 +778,7 @@ a.button.tinybutton > i {
     margin:5px 0;
   }
   .section {
-    padding:5px 0;
+    padding:12px 0;
   }
 
 }
