@@ -21,7 +21,6 @@ var online_count = 0;
 var messages = "";
 var alias;
 var self = {};
-const socket = io("https://oscetimer-server.onrender.com");
 
 if (!navigator.canShare) {
     document.getElementById("sharelinkbutton").style.display="none";
