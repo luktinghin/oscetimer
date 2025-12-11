@@ -20,6 +20,8 @@ var online_count = 0;
 //for self, viewer
 var messages = "";
 var alias;
+var self = {};
+const socket = io("https://oscetimer-server.onrender.com");
 
 if (!navigator.canShare) {
     document.getElementById("sharelinkbutton").style.display="none";
@@ -56,7 +58,23 @@ function hidemodal(param) {
     modal = undefined;
 }
 
-// receiver.html code below
+//client code
+socket.on("connect", () => {
+    console.log("connected to socket server");
+    initialize();
+    loadURL();
+})
+
+socket.on("")
+
+function initialize() {
+    self.id = genID();
+    console.log("initiation, self ID " + self.id);
+}
+
+// peerJS
+// deprecated
+/*
        function initialize() {
                     // Create own peer object with connection to shared PeerJS server
                     peer = new Peer("osce-timer-user-" + genID(), {
@@ -218,6 +236,7 @@ function hidemodal(param) {
                     });
                 };
 
+*/
 
 function init(value) {
     document.getElementById("status").style.display = "block";
@@ -230,6 +249,7 @@ function init(value) {
         document.getElementById("div_timer_controls").style.display = "flex";
         document.getElementById("status").innerHTML = "Host: await connection";
         mode = 0;
+        self.role = "host";
     } else {
         document.getElementById("page_receiver").style.display = "block";
         document.getElementById("page_start").style.display = "none";
@@ -238,6 +258,7 @@ function init(value) {
         document.getElementById("div_timer_controls").style.display = "none";
         document.getElementById("status").innerHTML = "Viewer: await connection";
         mode = 1;
+        self.role = "viewer";
         if (value == 2) {
             //load from ext URL
             document.getElementById("page_receiver_1").style.display = "none";
