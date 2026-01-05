@@ -21,6 +21,7 @@ var online_count = 0;
 var messages = "";
 var alias;
 var self = {};
+const socket = io("wss://oscetimer-server.onrender.com/");
 
 if (!navigator.canShare) {
     document.getElementById("sharelinkbutton").style.display="none";
@@ -64,7 +65,6 @@ socket.on("connect", () => {
     loadURL();
 })
 
-socket.on("")
 
 function initialize() {
     self.id = genID();
