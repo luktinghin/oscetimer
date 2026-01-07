@@ -18,7 +18,7 @@ var online_count = 0;
 var messages = "";
 var self = {};
 var hostid = undefined;
-import { io } from "socket.io-client";
+//import { io } from "socket.io-client";
 const SERVER_URL = "https://oscetimer.app"
 const socket = io(SERVER_URL, {
     transports: ["websocket"],
