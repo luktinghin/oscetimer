@@ -22,9 +22,9 @@
 		</div>
 		<div id="page_start">
 			<div id="page_start_inner">
-				<h1>OSCEtimer.app</h1>
-				<h2>The OSCE Timer is a free, web-based synchronized countdown timer based on peerJS. All users are connected to the same countdown timer simultaneously. </h2>
-				<div class="section line">An HOST controls the countdown timer (start / stop / countdown duration). A VIEWER listens to the time signal broadcast from the administrator. A peer-to-peer connection ensures that the timers on different connected devices are synchronized.</div>
+				<h1><img id="logo" src="icon.webp">OSCEtimer.app</h1>
+				<h2>The OSCE Timer is a free, web-based synchronized countdown timer. All users are connected to the same countdown timer simultaneously. </h2>
+				<div class="section line">A <b style="color:#198964;font-weight:bold">HOST</b> begins the session and shares the session ID code. A <b style="color:#198964;font-weight:bold">VIEWER</b> logs on to the same timer session. The host can then start the timer and the timer display is synchronized across the network. Multiple viewers on multiple devices can be connected simultaneously.</div>
 				<div class="section" style="text-align:center">
 					<div class="section">Choose a role to begin:</div>
 					<a class="button invert" onclick="init(0)">Host</a>
@@ -102,17 +102,19 @@
 				<div style="flex-basis:80px">Host ID:</div>
 				<div>
 					<input id="senderID" style="width:100px">
-					<a class="button tinybutton" id="submitID" onclick="init_receiver()">Submit</a>
 				</div>
 			</div>
 			<div class="section line" id="page_receiver_2" style="display:none">
 				<div id="page_receiver_msg" style="font-size:0.8rem;color:#666"></div>
 			</div>
 			<div class="section" id="page_receiver_alias" style="display:flex;align-items:center;gap:10px">
-				<div style="flex-basis:80px">Username:</div>
+				<div style="flex-basis:80px">Nickname:</div>
 				<div>
 					<input id="viewerID" oninput="updatereceiverdata();" placeholder="Enter a name to start" style="text-align:left;min-width:200px">
 				</div>
+			</div>
+			<div class="section" id="page_receiver_1_button">
+					<a class="button tinybutton" id="submitID" onclick="init_receiver()">Submit</a>
 			</div>
 		</div>
 		<div class="" id="div_timer">
@@ -152,10 +154,10 @@
 			<div  class="section line" id="div_usermx_controls">
 				<div id="status_count"></div>
 				<div>
-					<a class="button tinybutton" onclick="sender_displayusers();">Update</a>
+					<a class="button tinybutton" onclick="sender_poll();">Update</a>
 				</div>
 			</div>
-			<div style="display:flex;align-items:center;gap:10px"  class="section">
+			<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"  class="section">
 				<div>Quick chat: </div>
 				<div id="div_userslist">
 				</div>
@@ -178,11 +180,25 @@
 			<i class="fas fa-question-circle"></i>
 		</div>
 </body>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
 <script src="main.js"></script>
 <script src="index.js"></script>
-<!--<script src="https://unpkg.com/peerjs@1.5.0/dist/peerjs.min.js"></script>-->
-<script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
 <script>
-	
+let wakeLock = null; //sentinel
+const requestWakeLock = async () => {
+  try {
+    wakeLock = await navigator.wakeLock.request();
+    wakeLock.addEventListener('release', () => {
+      console.log('Screen Wake Lock released:', wakeLock.released);
+    });
+    console.log('Screen Wake Lock released:', wakeLock.released);
+  } catch (err) {
+    console.error(`${err.name}, ${err.message}`);
+  }
+};
+document.addEventListener('visibilitychange', async () => {
+  if (wakeLock !== null && document.visibilityState === 'visible') {
+    requestWakeLock();
+  }
+});
 </script>
-<script>initialize()</script>

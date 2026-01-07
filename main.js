@@ -1,13 +1,9 @@
-var peer = null;
-var r_conn = null;
 var offset;
 var time = 0;
 var time_in_s;
 var count = 0;
 var loop1 = null;
 var loop2 = null;
-var connections = new Array();
-var c_count = -1;
 var temporal = {};
 var isFullscreen = false;
 var initiated = false;
@@ -16,12 +12,15 @@ temporal.distance = 0;
 temporal.firstrun = -1;
 temporal.paused = false;
 var users = new Array();
+var usersMsg =  new Array();
 var online_count = 0;
 //for self, viewer
 var messages = "";
-var alias;
 var self = {};
-const socket = io("wss://oscetimer-server.onrender.com/");
+var hostid = undefined;
+const socket = io();
+var label;
+var modal = undefined;
 
 if (!navigator.canShare) {
     document.getElementById("sharelinkbutton").style.display="none";
@@ -29,11 +28,16 @@ if (!navigator.canShare) {
     document.getElementById("copylinkbutton").style.display="none";
 }
 
-function displayDialog(dialogTitle, dialogContent) {
+function displayDialog(dialogTitle, dialogContent, noClose) {
     const ElTitle = document.querySelector("#modalDialog .title");
     const ElContent = document.querySelector("#modalDialog .modal-body");
     ElTitle.innerHTML = dialogTitle;
     ElContent.innerHTML = dialogContent;
+    if (noClose) {
+        document.querySelector(".close").style.display = "none";
+    } else {
+        document.querySelector(".close").style.display = "block";
+    }
     setmodal("modalDialog");
 }
 
@@ -45,7 +49,7 @@ function displayDialogFull(dialogTitle, dialogContent) {
     setmodal("modalDialogFull");
 }
 
-function setmodal(modalname) {
+function setmodal(modalname, noClose) {
   modal = document.getElementById(modalname);
   modalcontent = document.getElementById(modalname + "content");
   modal.classList.add("fadein");
@@ -55,20 +59,186 @@ function setmodal(modalname) {
 function hidemodal(param) {
     document.getElementById(param + "content").classList.remove("open");
     document.getElementById(param).classList.remove("fadein");
+    document.getElementById(param).classList.remove("noClose");
     modal = undefined;
 }
 
 //client code
 socket.on("connect", () => {
     console.log("connected to socket server");
-    initialize();
-    loadURL();
+    if (!initiated) {
+        socket.nickname = "";    
+        initialize();
+        loadURL();
+    } else {
+        console.log("connection re-established");
+        if (self.role=="viewer") {
+            if (hostid != undefined) {
+                joinRoom(hostid);    
+            }
+        } else {
+            joinRoom();
+            sender_sync();
+            sender_displayusers();
+        }
+    }
 })
 
+//client code
+socket.on('disconnect', () => {
+    if (self.role == "viewer") {
+            document.getElementById("status").innerHTML = "Viewer: lost connection";
+            document.getElementById("page_receiver_msg").innerHTML = "Disconnected";
+            document.getElementById("timer_status").innerHTML = "Please wait...";  
+            receiver_reset();
+            displayDialog("Disconnection","<div style='padding:15px'>Viewer is disconnected. If the connection is re-established, the viewer app will automatically reconnect and synchronize.</div>");
+            clearInterval(receiver_check);
+            receiver_check = null;
+    }
+})
+
+//client-host code
+/*deprecated registration, this become server based
+socket.on("register", (msg) => {
+    c_count = c_count + 1;
+    users[c_count] = {};
+    users[c_count].id = msg.slice(0,6);
+    users[c_count].nickname = msg.slice(6);
+    console.log(users);
+    sender_displayusers();
+});
+*/
+
+socket.on("users", (data) => {
+    userObj = data;
+    //sort
+    userObj.sort((a,b)=>a.nickname.localeCompare(b.nickname));
+    users.length = 0;
+    users = structuredClone(userObj);
+    console.log(users);
+    if (self.role == "host") {
+        sender_displayusers();
+    } else {
+        check_status(true);
+    }
+})
+
+function joinRoom(roomInput) {
+    if (roomInput == undefined) {
+        //this is host
+        roomId = "room-" + self.uid;
+        self.nickname = ""; //need to set to empty because undefined will result in error
+    } else {
+        roomId = "room-" + roomInput;
+    }
+    uid = self.uid;
+    nickname = self.nickname;
+    role = self.role;
+    socket.emit('join', { room: roomId, uid: uid, nickname: nickname, role: role });
+    socket.emit('send data to host', { command: 'JN', hostid: hostid });
+    if (self.role == "viewer") {
+        t = setTimeout(function() {
+            request_sync();
+            receiver_poll();
+            if (receiver_check == null) periodic_check();
+        }, 1000);
+    }
+}
+
+socket.on("send host", (data) => {
+    if (self.role == "host") {
+                        if (data.slice(0,2)=="MS") {
+                            tempfrom = data.slice(2,8);
+                            tempuserindex = usersMsg.findIndex(user => user.uid == tempfrom);
+        if (tempuserindex == -1) {
+            usersMsg.push({ uid: tempfrom, messages: "" });
+            tempuserindex = usersMsg.length - 1;
+        }
+                            tempuserindex2 = users.findIndex(user => user.uid == tempfrom);
+                            tempalias = users[tempuserindex2].nickname;
+                            msg = data.slice(8);
+                            timestr = formattime(new Date());
+                            usersMsg[tempuserindex].messages += `
+                                <div class="chatbox_chat_else">
+                                    <div class="chatbox_chat_head">
+                                        <span class="chatbox_author_else">${tempalias}</span>&nbsp;&bull;&nbsp;<span class="timestamp">${timestr}</span>
+                                    </div>
+                                    <div class="chatbox_chat_contents">${msg}</div>
+                                </div>
+                            `;
+                            if (modal!=undefined) {
+                                document.querySelector(".chatbox_messages").innerHTML = usersMsg[tempuserindex].messages;    
+                                document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
+                            }
+                        } else if (data.slice(0,2)=="CM") {
+                            tempfrom = data.slice(2,8);
+                            str = data.slice(8);
+                            receiver_parsecommand(str, tempfrom);
+                        } else if (data.slice(0,2)=="ID") {
+
+                            //deprecated as user management is handled by server
+                            //signal used to identify viewer user nickname
+                            //tempfrom = data.slice(2,8);
+                            //tempuserindex = users.findIndex(user => user.uid == tempfrom);
+                            //tempalias = data.slice(8);
+                            //users[tempuserindex].nickname = tempalias;
+                        } else if (data.slice(0,2)=="JN") {
+                            //someone joined a room, remote request the host to update
+                            sender_poll();
+                            console.log("remote users list refresh triggered, users updated");
+                        } else if (data.slice(0,2)=="SY") {
+                            sender_sync();
+                            sender_label();
+                        }
+    }
+})
+//client-viewer code
+socket.on("send viewer", (data) => {
+    if (self.role == "viewer") {
+                        if (data.slice(0,2) == "TS") {
+                            //time stream signal
+                            str = data.slice(2);
+                            temporal.distance = str * 1;
+                            temporal.destination = temporal.distance + Date.now();
+                            if (temporal.paused) temporal.paused = false;
+                            receiver_sync(temporal.distance);
+                            document.getElementById("page_receiver_msg").innerHTML = "Syncing";
+                        } else if (data.slice(0,2) == "CM") {
+                            //command from host
+                            receiver_parsecommand(data.slice(2),"host");
+                        } else if (data.slice(0,2) == "MS") {
+                            //message
+                            str = data.slice(2);
+                            timestr = formattime(new Date());
+                            messages += `
+                                <div class="chatbox_chat_else">
+                                    <div class="chatbox_chat_head">
+                                        <span class="chatbox_author_else">Host</span>&nbsp;&bull;&nbsp;<span class="timestamp">${timestr}</span>
+                                    </div>
+                                    <div class="chatbox_chat_contents">${str}</div>
+                                </div>
+                            `;
+                            document.getElementById("incomingmessage").innerHTML = str;
+                            if (modal!=undefined) {
+                                document.querySelector(".chatbox_messages").innerHTML = messages;
+                                document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
+                            }
+                        } else if (data.slice(0,2) == "CP") {
+                            //pause command, to refresh and mirror display without altering temporal
+                            str = data.slice(2);
+                            document.getElementById("timer_display").innerText = str;
+                        } else if (data.slice(0,2) == "LB") {
+                            //display a label given by host
+                            str = data.slice(2);
+                            document.getElementById("div_label_output").innerText = str;
+                        }
+    }
+})
 
 function initialize() {
-    self.id = genID();
-    console.log("initiation, self ID " + self.id);
+    self.uid = genID();
+    console.log("initiation, self ID " + self.uid);
+    document.getElementById("ownID").innerHTML = self.uid;
 }
 
 // peerJS
@@ -238,6 +408,7 @@ function initialize() {
 */
 
 function init(value) {
+    requestWakeLock();
     document.getElementById("status").style.display = "block";
     document.getElementById("helpicon").classList.add("transform");
     if (value == 0) {
@@ -249,6 +420,7 @@ function init(value) {
         document.getElementById("status").innerHTML = "Host: await connection";
         mode = 0;
         self.role = "host";
+        joinRoom();
     } else {
         document.getElementById("page_receiver").style.display = "block";
         document.getElementById("page_start").style.display = "none";
@@ -258,11 +430,13 @@ function init(value) {
         document.getElementById("status").innerHTML = "Viewer: await connection";
         mode = 1;
         self.role = "viewer";
+        self.conn_failure = 0;
         if (value == 2) {
             //load from ext URL
             document.getElementById("page_receiver_1").style.display = "none";
+            document.getElementById("page_receiver_1_button").style.display = "none";
             document.getElementById("page_receiver_2").style.display = "block";
-            document.getElementById("page_receiver_msg").innerHTML = "Attempt to connect: " + r_conn.peer;
+            document.getElementById("page_receiver_msg").innerHTML = "Attempt to connect: " + hostid;
         }
     }
 }
@@ -273,26 +447,24 @@ function addMessage(param2,param1) {
     el0.innerHTML = param1 + ": " + param2 + "<br>" + el0.innerHTML;
 }
 
-function init_receiver() {
+function init_receiver(arg) {
     //get id
-    inputvalue = document.getElementById("senderID").value;
-    join("osce-timer-user-" + inputvalue);
-    if (document.getElementById("viewerID").value != "") {
-        updatereceiverdata();
+    if (arg == undefined) {
+        hostid = document.getElementById("senderID").value;    
+    } else {
+        hostid = arg;
     }
-}
-
-function update() { //OBSOLETE
-    now = Date.now();
-    time += (now - offset) *1;
-    offset = now;
-    time_in_s = time/1000;
+    self.nickname = document.getElementById("viewerID").value;
+    document.getElementById("page_receiver_1_button").style.display = "none";
+    joinRoom(hostid);
 }
 
 function periodic_sync() {
     sender_sync();
-    sender_label();
-    sender_displayusers();
+    if (label != document.getElementById("label_input").value) {
+        sender_label();    
+    }
+    sender_poll();
 }
 
 function display_timer() {
@@ -322,45 +494,20 @@ function converttime(relativeclock) {
 }
 
 function sender_sync() {
-    if (temporal.distance>0) {
-        if (connections.length>0) {
-            connections.forEach((el) => {
-                if (el.conn != null) 
-                    if (el.conn.open) {
-                        el.conn.send("TS" + temporal.distance);
-                        if (temporal.paused) {
-                            console.log("senderpause");
-                            sender_command("pause");
-                            //to hide the bug for pause mechanism on receiver side. receiver's clock will be wrong because pause-from is not synced.
-                            el.conn.send("CP" + document.getElementById("timer_display").innerText);
-                        }
-                    }
-            });
+    if (temporal.distance > 0) {
+        if (temporal.paused) {
+            //do not emit TS signal on pause, from sender
+            socket.emit("send viewer", "CMpause");
+            socket.emit("send viewer", "CP" + document.getElementById("timer_display").innerText);
+        } else {
+            socket.emit("send viewer","TS" + temporal.distance);
         }
-    }
-}
-
-function sender_command(param) {
-    if (connections.length>0) {
-        connections.forEach((el) => {
-            if (el.conn != null) {
-                if (el.conn.open) el.conn.send("CM" + param);
-            }
-        });
-    }
-}
-
-function sender_msg(param) {
-    if (connections.length>0) {
-        connections.forEach((el) => {
-            if (el.conn != null) {
-                if (el.conn.open) el.conn.send("MS" + param);
-            }
-        });
-    }
+    } 
 }
 
 function receiver_sync(distance) {
+    self.conn_failure = 0;
+    document.getElementById("status").innerHTML = "Viewer: connected to host";
     start_stopwatch(distance);
 }
 
@@ -372,7 +519,7 @@ function receiver_reset() {
     reset_action();
 }
 
-function receiver_parsecommand(param) {
+function receiver_parsecommand(param, tempfrom) {
     if (param == "pause") {
         console.log("receiverpause");
         receiver_pause();
@@ -385,6 +532,11 @@ function receiver_parsecommand(param) {
         sender_label();
         sender_displayusers();
     }
+}
+
+function request_sync() {
+    console.log('request to sync sent to host');
+    socket.emit("send data to host", {hostid: hostid, command: "SY"});
 }
 
 function loadURL() {
@@ -404,20 +556,55 @@ function loadURL() {
         if (inputString == "") {
             console.log("url: V param empty");
         } else {
-            console.log(inputString);
-            addMessage("Auto-connected via URL command.")
-            join("osce-timer-user-" + inputString);
-            init(2);
+            if (!initiated) {
+                initiated = true;
+                console.log("autoconnect URL " + inputString);
+                hostid = inputString;
+                display_receiverlogin(inputString);
+            }
         }
     }
 }
 
+function display_receiverlogin(arg) {
+    tempHTML = `
+    <div style="padding:20px">
+        <div style="text-align:center; padding:10px 0; font-size:0.75rem; font-weight:bold; background:#eee">Session: <span style="color:#198964">${arg}</span></div>
+        <div>Enter a nickname to identify yourself:</div>
+        <div>
+            <input id="viewerID_logon">
+        </div>
+        <div id="error_logon" style="color:red;font-style:italic">
+        </div>
+        <div style="text-align:right">
+            <a class="button invert" onclick="validate();" style="margin-right:0; margin:10px 0">LOGON</a>
+        </div>
+    </div>
+    `;
+    displayDialog("Welcome to OSCETimer.app", tempHTML, true);
+
+
+}
+    function validate() {
+        tempNick = document.getElementById("viewerID_logon").value;
+        self.nickname = tempNick;
+        if (tempNick != "") {
+            document.getElementById("error_logon").innerHTML = "";
+            document.getElementById("viewerID").value = tempNick;
+            init(2);
+            init_receiver(hostid);
+            hidemodal('modalDialog');
+        } else {
+            document.getElementById("error_logon").innerHTML = "Nickname cannot be empty";
+        }
+    }
+
 function sharefunction2() {
-    sharefunction(peer.id.slice(16));
+    sharefunction(self.uid);
 }
 
 function copyfunction2(is_link) {
-    copyfunction(peer.id.slice(16),is_link);
+    copyfunction(self.uid,is_link);
 }
 
 async function sharefunction(param) {
@@ -477,33 +664,24 @@ function start_stopwatch(distance) {
             temporal.destination = distance + offset;
         }
         console.log(temporal.destination);
-        update();
         display_timer();
         clearInterval(loop1);
         clearInterval(loop2);
         loop1 = setInterval(periodic_sync,15000);
         loop2 = setInterval(display_timer,250);
-        if (connections.length>0) {
-            sender_sync();
-        }
+        if (self.role == "host") {sender_sync()};
     } else {
         pausedur = Date.now() - temporal.pausefrom;
         temporal.destination = temporal.destination + pausedur;
         console.log(temporal.destination);
-        update();
         display_timer();
         clearInterval(loop1);
         clearInterval(loop2);
         loop1 = setInterval(periodic_sync,15000);
         loop2 = setInterval(display_timer,250);
-        if (connections.length>0) {
-            sender_sync();
-        }
         temporal.paused = false;
         temporal.pausefrom = 0;
-        if (connections.length>0) {
-            sender_sync();
-        }
+        if (self.role == "host") {sender_sync()};
     }
     if (mode == 0) {
         document.getElementById("select_timer").disabled = true;
@@ -525,9 +703,6 @@ function start_stopwatch(distance) {
 
 function pause_stopwatch() {
     pause_action();
-        if (connections.length>0) {
-            sender_command("pause");
-        }
 }
 
 function pause_action() {
@@ -543,13 +718,11 @@ function pause_action() {
         document.getElementById("startbutton2").style.display = "flex";
         document.getElementById("pausebutton").style.display = "none";
     }
+    if (self.role == "host") {socket.emit("send viewer", "CMpause")};
 }
 
 function reset_stopwatch() {
     reset_action();
-        if (connections.length>0) {
-            sender_command("reset");
-        }
 }
 
 function reset_action() {
@@ -571,6 +744,7 @@ function reset_action() {
         document.getElementById("resetbutton").style.display = "none";
         document.getElementById("fullscreenbutton").style.display = "none";
     }
+    if (self.role == "host") {socket.emit("send viewer", "CMreset")};
 }
 
 function testsend1() {
@@ -627,38 +801,31 @@ function fullscreen() {
 }
 receiver_check = null;
 function periodic_check() {
-    receiver_check = setInterval(check_status2,10000);
+    if (receiver_check == null) receiver_check = setInterval(receiver_poll,25000);
 }
-function check_status2() {
-    if (check_status()) {
-        document.getElementById("status").innerHTML = "Viewer: connected to host";
-        document.getElementById("page_receiver_msg").innerHTML = "Connected to host: " + r_conn.peer.slice(16);
-    } else {
-        document.getElementById("status").innerHTML = "Viewer: lost connection";
-        document.getElementById("page_receiver_msg").innerHTML = "Disconnected";
-        receiver_reset();
-        document.getElementById("timer_status").innerHTML = "Please wait...";   
-    }
-}
-function check_status() {
-    status = r_conn.peerConnection.iceConnectionState;
-    if (r_conn != null) {
-        if (r_conn.peerConnection != null) {
-            if (status === 'connected' || status === 'completed') {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    } else {
-        return false;
-    }
 
+function check_status(param_skip_failure_count) {
+    tempIndex = users.findIndex(user => user.uid == hostid);
+    if (tempIndex>-1) {
+        self.conn_failure = 0;
+        console.log("found");
+        document.getElementById("status").innerHTML = "Viewer: connected to host";
+    } else {
+        if (param_skip_failure_count == false) self.conn_failure += 1;
+        document.getElementById("status").innerHTML = "Viewer: trying to connect";
+        if (self.conn_failure == 3) {
+            document.getElementById("status").innerHTML = "Viewer: lost connection";
+            document.getElementById("page_receiver_msg").innerHTML = "Disconnected";
+            receiver_reset();
+            document.getElementById("timer_status").innerHTML = "Please wait...";  
+        }
+        console.log("not found");
+    }
 }
+
 function genID() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    //slightly modify
+  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYabcdefghjkmnpqrstuvwxy23456789';
   let result = '';
   const charactersLength = characters.length;
   for (let i = 0; i < 6; i++) {
@@ -675,88 +842,88 @@ function sender_label_debounce() {
 }
 
 function sender_label() {
-    str = document.getElementById("label_input").value;
-        if (connections.length>0) {
-            connections.forEach((el) => {
-                if (el.conn != null) 
-                    if (el.conn.open) {
-                        el.conn.send("LB" + str);
-                    }
-                })
-            }
+    label = document.getElementById("label_input").value;
+    socket.emit("send viewer", "LB" + label);
 }
 
 function sender_poll() {
-    online_count = 0;
-        if (connections.length>0) {
-            connections.forEach((el,index) => {
-                online = false;
-                if (el.conn != null) {
-                    if (el.conn.peerConnection != null) {
-                        status = el.conn.peerConnection.iceConnectionState;
-                        if (status === 'connected' || status === 'completed') {
-                            online = true;
-                            online_count += 1;
-                        } else {
-                            online = false;
-                        }
-                        users[index].online = online;
-                    } else {
-                        users[index].online = false;
-                    }
-                } else {
-                    users[index].online = false;
-                }
-            });
-        }
+    socket.emit("users list",self.uid);
+}
+
+function receiver_poll() {
+    //grab users list
+    socket.emit("users list",hostid);
+    t = setTimeout(check_status,5000);
 }
 
 function sender_displayusers() {
     el1 = document.getElementById("div_userslist");
     el1.innerHTML = "";
-    sender_poll();
     for (i=0;i<users.length;i++) {
-        if (users[i].online) {
+        if (users[i].nickname == "") {
+            tempname = "Anonymous";
+        } else {
+            tempname = users[i].nickname;
+        }
+        if (users[i].uid == self.uid) {
+            //self, host
+        } else {
             el2 = document.createElement("a");
             el2.setAttribute('class','button tinybutton');
-            el2.setAttribute('id','userbox'+users[i].id);
-            el2.setAttribute('onclick','chatbox(' + i +')');
-            if (users[i].data == undefined) {
-                el2.innerHTML = users[i].id;
-            } else {
-                el2.innerHTML = users[i].data.alias;    
-            }
+            el2.setAttribute('id','userbox'+users[i].uid);
+            el2.setAttribute('onclick','chatbox("' + users[i].uid +'")');
+            el2.innerHTML = tempname;    
             el1.appendChild(el2);
         }
     }
-    document.getElementById("status_count").innerHTML = online_count + " users online";
+    viewerCount = users.length-1;
+    if (viewerCount > 0) {
+        document.getElementById("status_count").innerHTML = viewerCount + " users online";
+        document.getElementById("status").innerHTML = "HOST: connected to " + viewerCount + " users";    
+    } else {
+        document.getElementById("status_count").innerHTML = "";
+        document.getElementById("status").innerHTML = "HOST: await connection";
+    }
 }
 
 aliasTimeout = null;
 function updatereceiverdata() {
-    alias = document.getElementById("viewerID").value;
-    dataobj = {};
-    dataobj.alias = alias;
-    datastring = JSON.stringify(dataobj);
     clearTimeout(aliasTimeout);
     aliasTimeout = setTimeout(function() {
-        r_conn.send("ID" + datastring);
+        self.nickname = document.getElementById("viewerID").value;
+        tempObj = {
+            uid: self.uid,
+            nickname: self.nickname,
+            command: "ID",
+            hostid: hostid,
+            role: "viewer"
+        };
+        //socket.emit("send data to host", tempObj); - deprecated
+        socket.emit("user update", tempObj);
+        socket.emit("send data to host", {command:"JN",hostid: hostid});
     },1000);
 }
 
-function chatbox(param,isViewer) {
-    if (!isViewer) {
-        if (users[param].data == undefined) {
-            tempalias = users[param].id;
-        } else {
-            tempalias = users[param].data.alias;    
+function chatbox(paramId) {
+
+
+    if (self.role == "host") {
+        //check if there's a message list initiated, if not, create a message object for that user
+
+        tempIndex2 = users.findIndex(user => user.uid == paramId);
+        tempalias = users[tempIndex2].nickname;    
+        tempIndex = usersMsg.findIndex(user => user.uid == paramId);
+        if (tempIndex == -1) {
+            //if not found, create a message list and push to usersMsg array
+            usersMsg.push({ uid: paramId, messages: "" });
+            tempIndex = usersMsg.length - 1;
         }
-        messagelist = users[param].messages;    
+        messagelist = usersMsg[tempIndex].messages;    
         tempHTML = `
             <div class='chatbox_messages'>${messagelist}</div>
             <div class='chatbox_input_outer'>
-                <textarea class='chatbox_input' id='chatbox_input_msg${param}'></textarea>
-                <a class='button invert right' id="chatbox_send" onclick='chatbox_sendmsg(${param})'>Send</a>
+                <textarea class='chatbox_input' id='chatbox_input_msg${paramId}'></textarea>
+                <a class='button invert right' id="chatbox_send" onclick='chatbox_sendmsg("${paramId}")'>Send</a>
             </div>
         `;
         displayDialog('Chat with ' + tempalias,tempHTML);
@@ -765,7 +932,7 @@ function chatbox(param,isViewer) {
             <div class="chatbox_messages">${messages}</div>
             <div class='chatbox_input_outer'>
                 <textarea class='chatbox_input' id='chatbox_input_msg'></textarea>
-                <a class='button invert right' onclick='chatbox_sendmsg(0,true)'>Send</a>
+                <a class='button invert right' onclick='chatbox_sendmsg()'>Send</a>
             </div>
         `;
         displayDialog('Chat with host',tempHTML);
@@ -773,16 +940,21 @@ function chatbox(param,isViewer) {
     document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
 }
 
-function chatbox_sendmsg(param,isViewer) {
+function chatbox_sendmsg(paramId) {
     dateobj = new Date();
     timestr = formattime(dateobj);
-    if (!isViewer) {
+    if (self.role == "host") {
         //sender is host
-        str = document.getElementById("chatbox_input_msg" + param).value;
-        if (users[param].messages == undefined) users[param].messages = "";
-        if (connections[param].conn.open) {
-            connections[param].conn.send("MS" + str);
-            users[param].messages += `
+        str = document.getElementById("chatbox_input_msg" + paramId).value;
+        tempObj = {
+            command: "MS",
+            uid: paramId,
+            msg: str
+        };
+        socket.emit("send data to viewer", tempObj);
+            socket.emit("send data to viewer", "MS" + str);
+            tempIndex = usersMsg.findIndex(user => user.uid == paramId);
+            usersMsg[tempIndex].messages += `
                 <div class="chatbox_chat_self">
                     <div class="chatbox_chat_head">
                         <span class="chatbox_author_self">Host</span>&nbsp;&bull;&nbsp;<span class="timestamp">${timestr}</span>
@@ -790,20 +962,22 @@ function chatbox_sendmsg(param,isViewer) {
                     <div class="chatbox_chat_contents">${str}</div>
                 </div>
             `;
-        }
-        document.querySelector(".chatbox_messages").innerHTML = users[param].messages;    
+        
+        document.querySelector(".chatbox_messages").innerHTML = usersMsg[tempIndex].messages;    
         document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
-        document.getElementById("chatbox_input_msg" + param).value = "";    
+        document.getElementById("chatbox_input_msg" + paramId).value = "";    
     } else {
         //sender is viewer
         str = document.getElementById("chatbox_input_msg").value;
-        if (alias == undefined) {
-            tempalias = "Self"
-        } else {
-            tempalias = alias;
-        }
-        if (r_conn.open) {
-            r_conn.send("MS" + str);
+        //prepare object
+        tempObj = {
+            hostid: hostid,
+            command: "MS",
+            uid: self.uid,
+            msg: str
+        };
+            tempalias = self.nickname;
+            socket.emit("send data to host", tempObj);
             messages += `
                 <div class="chatbox_chat_self">
                     <div class="chatbox_chat_head">
@@ -812,7 +986,7 @@ function chatbox_sendmsg(param,isViewer) {
                     <div class="chatbox_chat_contents">${str}</div>
                 </div>
             `;
-        } 
+        
         document.querySelector(".chatbox_messages").innerHTML = messages;
         document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
         document.getElementById("chatbox_input_msg").value = "";    

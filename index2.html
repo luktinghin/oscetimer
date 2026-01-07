@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.IO Chat with Rooms and DMs</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    #chat { height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    #message, #room, #nickname { width: 200px; margin-right: 10px; }
+  </style>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <h1>Chat App with Rooms and DMs</h1>
+  <input type="text" id="nickname" placeholder="Enter your nickname...">
+  <input type="text" id="room" placeholder="Enter room name...">
+  <button onclick="joinRoom()">Join Room</button>
+  <div id="chat"></div>
+  <input type="text" id="message" placeholder="Type message or @nick message for DM...">
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    const socket = io();
+    let currentRoom = '';
+
+    socket.on('connect', () => {
+      console.log('Connected to Socket.IO server');
+    });
+
+    socket.on('chat message', (msg) => {
+      const chat = document.getElementById('chat');
+      const msgDiv = document.createElement('div');
+      msgDiv.textContent = msg;
+      chat.appendChild(msgDiv);
+      chat.scrollTop = chat.scrollHeight;
+    });
+
+    socket.on('system message', (msg) => {
+      const chat = document.getElementById('chat');
+      const msgDiv = document.createElement('div');
+      msgDiv.textContent = `[System] ${msg}`;
+      msgDiv.style.fontStyle = 'italic';
+      chat.appendChild(msgDiv);
+      chat.scrollTop = chat.scrollHeight;
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from Socket.IO server');
+    });
+
+    function joinRoom() {
+      const roomInput = document.getElementById('room');
+      const nickInput = document.getElementById('nickname');
+      if (roomInput.value.trim() !== '' && nickInput.value.trim() !== '') {
+        currentRoom = roomInput.value.trim();
+        const nickname = nickInput.value.trim();
+        socket.emit('join room', { room: currentRoom, nickname });
+        // Optional: Disable nickname input after setting
+        nickInput.disabled = true;
+        roomInput.value = ''; // Clear room input
+      } else {
+        alert('Enter both nickname and room!');
+      }
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('message');
+      const inputValue = input.value.trim();
+      if (inputValue !== '' && currentRoom) {
+        if (inputValue.startsWith('@')) {
+          const spaceIndex = inputValue.indexOf(' ');
+          if (spaceIndex > 1) {
+            const target = inputValue.slice(1, spaceIndex);
+            const msg = inputValue.slice(spaceIndex + 1).trim();
+            if (msg) {
+              socket.emit('direct message', { room: currentRoom, target, msg });
+              input.value = '';
+              return;
+            }
+          }
+        }
+        // If not DM, send as broadcast
+        socket.emit('chat message', { room: currentRoom, msg: inputValue });
+        input.value = '';
+      } else if (!currentRoom) {
+        alert('Join a room first!');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -12,7 +12,7 @@ function displayAbout() {
 		</div>
 		<div class="dc-para">The host can define the duration of the timer. The host can start, pause, or reset a timer. These changes will be simultaneously synchronized on all the viewers' screens.
 		</div>
-		<div class="dc-para">The app has been tested on Chrome browser on computers and mobile devices. The app is not guaranteed to work if you use other browsers, as it typically fails on Safari browsers on iOS devices. This is a known issue. This is due to the usage of peerJS and underlying WebRTC technology which has limited support on iOS devices. You can use the Chrome browser on Apple devices to try and connect to the app. Also, on some networks behind a firewall, the app may not work.
+		<div class="dc-para">The technology stack is based on a Node.js server with a Socket.IO implementation with broad support over a wide range of devices and browsers.
 		</div>
 		<div class="dc-subheading">Connecting to a timer session</div>
 		<div class="dc-para">
@@ -22,7 +22,7 @@ function displayAbout() {
 			VIEWER: as a viewer, you can connect to the HOST's timer session by two methods. (1) You may be provided with a link, once you open the link you will be taken to the timer session page. (2) You may be provided with a host ID code, which you can enter (or paste) into the host ID entry field. Click "Submit" to connect to the timer session.
 		</div>
 		<div class="dc-heading">Features</div>
-		<div class="dc-para">OSCEtimer mainly functions as as basic timer, connected to multiple users across a peer-to-peer connection network. The additional features are explained below.
+		<div class="dc-para">OSCEtimer mainly functions as as basic timer, connected to multiple users via a Socket.IO connection. The additional features are explained below.
 		</div>
 		<div class="dc-subheading">Quick chat</div>
 		<div class="dc-para">Direct messaging instantly between the host and an individual viewer is possible. (Host) Click on the viewer's user name to activate the chat box. (Viewer) Click on the Chat button to activate the chat box.
