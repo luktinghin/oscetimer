@@ -586,9 +586,7 @@ function display_receiverlogin(arg) {
         </div>
     </div>
     `;
-    displayDialog("Welcome to OSCETimer.app", tempHTML, true);
-
-
+    displayDialog("Welcome to CloudTimer.app", tempHTML, true);
 }
     function validate() {
         tempNick = document.getElementById("viewerID_logon").value;
@@ -614,7 +612,7 @@ function copyfunction2(is_link) {
 
 async function sharefunction(param) {
     //receives user id
-    url = "http://oscetimer.app/?V=" + param;
+    url = "http://cloudtimer.app/?V=" + param;
     try {
         await navigator.share({url:url});
     } catch(err) {
@@ -626,7 +624,7 @@ async function sharefunction(param) {
 function copyfunction(param,is_link) {
     var textarea = document.createElement("textarea");
     if (is_link) {
-        str = "http://oscetimer.app/?V=" + param;    
+        str = "http://cloudtimer.app/?V=" + param;    
     } else {
         str = param;
     }

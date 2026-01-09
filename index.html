@@ -10,10 +10,10 @@
 	<meta name="theme-color" content="#303030">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <meta charset="utf-8">
-	<meta name="description" content="OSCE Timer">
-    <meta name="keywords" content="OSCE Timer">
+	<meta name="description" content="Cloud Timer">
+    <meta name="keywords" content="Cloud Timer">
     <meta name="author" content="">
-    <title>OSCE Timer - Free synchronized countdown timer</title>
+    <title>CloudTimer - Free synchronized countdown timer</title>
 </head>
 <body>
 	<div id="main-body">
@@ -22,8 +22,8 @@
 		</div>
 		<div id="page_start">
 			<div id="page_start_inner">
-				<h1><img id="logo" src="icon.webp">OSCEtimer.app</h1>
-				<h2>The OSCE Timer is a free, web-based synchronized countdown timer. All users are connected to the same countdown timer simultaneously. </h2>
+				<h1><img id="logo" src="icon.webp">CloudTimer.app</h1>
+				<h2>The Cloud Timer is a free, web-based synchronized countdown timer. All users are connected to the same countdown timer simultaneously. </h2>
 				<div class="section line">A <b style="color:#198964;font-weight:bold">HOST</b> begins the session and shares the session ID code. A <b style="color:#198964;font-weight:bold">VIEWER</b> logs on to the same timer session. The host can then start the timer and the timer display is synchronized across the network. Multiple viewers on multiple devices can be connected simultaneously.</div>
 				<div class="section" style="text-align:center">
 					<div class="section">Choose a role to begin:</div>
@@ -172,15 +172,15 @@
 	<!--modals-->
 		<div id="modalDialog" class="modal alt">
 			<div class="modal-content alt" id="modalDialogcontent">
-				<div class="modal-header alt"><span class="title">OSCETimer</span><span class="close alt" onClick="hidemodal('modalDialog')">&times;</span></div>
-				<div class="modal-body alt">OSCETimer is loading up...</div>
+				<div class="modal-header alt"><span class="title">CloudTimer</span><span class="close alt" onClick="hidemodal('modalDialog')">&times;</span></div>
+				<div class="modal-body alt">CloudTimer is loading up...</div>
 			</div>
 		</div>
 		<div id="helpicon" onclick="displayAbout();">
 			<i class="fas fa-question-circle"></i>
 		</div>
 </body> 
-<script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+
 <script src="main.js"></script>
 <script src="index.js"></script>
 <script>
@@ -202,3 +202,10 @@ document.addEventListener('visibilitychange', async () => {
   }
 });
 </script>
+
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+
+<!-- cloud timer notes -->
+<!-- add the client socket io script 
+	 change all OSCE to cloud
+	 -->
