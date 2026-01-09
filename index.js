@@ -2,13 +2,13 @@ function displayAbout() {
 	// abbrev : dc = dialog content
 	aboutHTML = `
 	<div style="padding:10px">
-		<div class="dc-heading">OSCEtimer.app</div>
+		<div class="dc-heading">CloudTimer.app</div>
 		<div class="dc-para">
 			Created by Terence Luk & Eric Ng, since 2025.
 		</div>
 		<div class="dc-heading">Instruction manual</div>
 		<div class="dc-subheading">Basics</div>
-		<div class="dc-para">In the OSCE timer app, the HOST controls a timer session, and the VIEWERS connect to the timer session via a link or a host ID code. If there are multiple viewers, the host should provide the link or the ID code to all of them. If the connection is successful, the viewers will automatically appear in the User Management section on the host's app.
+		<div class="dc-para">In the Cloud Timer app, the HOST controls a timer session, and the VIEWERS connect to the timer session via a link or a host ID code. If there are multiple viewers, the host should provide the link or the ID code to all of them. If the connection is successful, the viewers will automatically appear in the User Management section on the host's app.
 		</div>
 		<div class="dc-para">The host can define the duration of the timer. The host can start, pause, or reset a timer. These changes will be simultaneously synchronized on all the viewers' screens.
 		</div>
@@ -16,13 +16,13 @@ function displayAbout() {
 		</div>
 		<div class="dc-subheading">Connecting to a timer session</div>
 		<div class="dc-para">
-			HOST: as the host, you can start by labelling your timer (Step 1). This label will be displayed on the timers of all connected users. Then, you should use your assigned session ID to identify your timer session across the network, so users can be connected to you (Step 2). You can either provide your users with the link (clicking on the shared link will automatically load the viewer page for this timer session), or the session ID (which your users can enter manually in their viewer page while accessing the OSCE timer app).
+			HOST: as the host, you can start by labelling your timer (Step 1). This label will be displayed on the timers of all connected users. Then, you should use your assigned session ID to identify your timer session across the network, so users can be connected to you (Step 2). You can either provide your users with the link (clicking on the shared link will automatically load the viewer page for this timer session), or the session ID (which your users can enter manually in their viewer page while accessing the Cloud Timer app).
 		</div>
 		<div class="dc-para">
 			VIEWER: as a viewer, you can connect to the HOST's timer session by two methods. (1) You may be provided with a link, once you open the link you will be taken to the timer session page. (2) You may be provided with a host ID code, which you can enter (or paste) into the host ID entry field. Click "Submit" to connect to the timer session.
 		</div>
 		<div class="dc-heading">Features</div>
-		<div class="dc-para">OSCEtimer mainly functions as as basic timer, connected to multiple users via a Socket.IO connection. The additional features are explained below.
+		<div class="dc-para">Cloud Timer mainly functions as as basic timer, connected to multiple users via a Socket.IO connection. The additional features are explained below.
 		</div>
 		<div class="dc-subheading">Quick chat</div>
 		<div class="dc-para">Direct messaging instantly between the host and an individual viewer is possible. (Host) Click on the viewer's user name to activate the chat box. (Viewer) Click on the Chat button to activate the chat box.
