@@ -163,8 +163,8 @@ async function joinRoom(roomInput) {
             } else {
                 await request_sync_TT();
             }
-            
             receiver_poll();
+            socket.emit("send data to host", {hostid: hostid, command: "SY"});
             if (receiver_check == null) periodic_check();
         } else {
             displayDialog("Error","<div style='padding:12px'>There is an error connecting to the host. Please verify the host ID code or try again later.</div>");
@@ -525,7 +525,7 @@ function receiver_parsecommand(param, tempfrom) {
 async function request_sync() {
     console.log('request to sync via server');
     //old code
-    socket.emit("send data to host", {hostid: hostid, command: "SY"});
+    //socket.emit("send data to host", {hostid: hostid, command: "SY"});
     //new code
     TSdist = await db_sync_read(hostid,"TS");
     console.log(TSdist);
