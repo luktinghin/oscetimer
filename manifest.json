@@ -1,6 +1,6 @@
 {
-  "name": "OSCETimer",
-  "short_name": "OSCETimer.app",
+  "name": "CloudTimer",
+  "short_name": "CloudTimer.app",
   "start_url": "index.html",
   "display": "standalone",
   "theme_color": "#000000",

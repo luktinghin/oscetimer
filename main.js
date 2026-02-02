@@ -20,6 +20,11 @@ var online_count = 0;
 var messages = "";
 var self = {};
 var hostid = undefined;
+const SERVER_URL = "https://oscetimer.app"
+const socket = io(SERVER_URL, {
+    transports: ["websocket"],
+    secure: true
+});
 var label;
 var modal = undefined;
 var timetable = {};
