@@ -38,8 +38,7 @@ timetable.active = false;
 timetable.destinations = new Array();
 timetable.prior = -1;
 timetable.TTdist = 0;
-timetableinput = new Array();
-const socket = io();    
+timetableinput = new Array(); 
 
 if (!navigator.canShare) {
     document.getElementById("sharelinkbutton").style.display="none";
