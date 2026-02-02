@@ -525,7 +525,7 @@ function receiver_parsecommand(param, tempfrom) {
 async function request_sync() {
     console.log('request to sync via server');
     //old code
-    //socket.emit("send data to host", {hostid: hostid, command: "SY"});
+    socket.emit("send data to host", {hostid: hostid, command: "SY"});
     //new code
     TSdist = await db_sync_read(hostid,"TS");
     console.log(TSdist);
