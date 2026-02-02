@@ -30,7 +30,7 @@
 
 @font-face {
    font-family: SourceSans;
-   src: url(fonts/sourcesans3-BoldIt.otf.woff2);
+   src: url(fonts/sourcesans3-boldit.otf.woff2);
    font-weight: bold;
    font-style: italic;
    font-display: swap;
@@ -121,14 +121,14 @@ button, select, input {
 select {
   height: 30px;
   width:120px;
-  border: 1px solid #aaa;
+  border: 1px solid #555;
   margin: 2px 0px 2px 0px; 
   padding:0px 2px; 
   outline: none;
   vertical-align:bottom;
   border-radius:4px;
-    color:#fff;
-  background:#303030;
+  	color:#fff;
+	background:#222;
 }
 
 select:focus {
@@ -197,6 +197,9 @@ h4 {
   background: #eee;
 }
 
+.reduced {
+  font-size: 0.75rem;
+}
 /*buttons */
 a.button {
   border-radius:2em;
@@ -209,7 +212,7 @@ a.button {
   background-color:white;
   text-decoration:none;
   font-weight:bold;
-  padding:5px;
+  padding:5px 11px;
   margin-right:5px;
   outline:0;
   cursor:pointer;
@@ -268,6 +271,16 @@ a.button.muted {
   padding-left: 15px; padding-right: 15px;
 }
 
+a.button.trans {
+  background:transparent;
+  border-color: rgba(128,128,128);
+  color: rgb(128,128,128);
+}
+a.button.trans:hover, a.button.trans:active {
+  background:#ddd;
+  color:black;
+}
+
 .right {
   float:right;
 }
@@ -291,15 +304,15 @@ a.button.disabled:hover, a.button.disabled:active {
 
 a.button.tinybutton {
   color: #ddd;
-  background-color: rgba(128,128,128,0.15);
-  border-color: rgba(128,128,128,0.15);
+  background-color: #454545;
+  border-color: #555;
   font-size: 90%;
   padding: 2px 14px 2px 14px;
   margin-right: 0;
 }
 a.button.tinybutton:hover, a.button.tinybutton:active {
-  background-color: rgba(128,128,128,0.5);
-  border-color: rgba(128,128,128,0.7);
+  background-color: #666;
+  border-color: #999;
   color:#fff;
 }
 a.button.tinybutton > i {
@@ -339,30 +352,30 @@ a.button.tinybutton > i {
   color:#eee;
 }
 
-#startbutton1 {
+.startbuttons {
   gap:0;
   padding-top:10px;
 }
-#startbutton1 .icon {
+.startbuttons .icon {
   font-size:1.5rem;
   padding-top:6px;
   width:3rem;
   height:3rem;
 }
-#startbutton1 a.button.tinybutton {
+.startbuttons a.button.tinybutton {
   min-width:0;
 }
 #main-body {
-  color:#eee;
+	color:#eee;
 }
 
 #status {
-  padding:10px;
-  border-bottom: 3px solid #198964;
+	padding:10px;
+	border-bottom: 3px solid #198964;
 }
 
 #page_msg {
-  display:none;
+	display:none;
     height: 100px;
     position: fixed;
     bottom: 0;
@@ -375,26 +388,26 @@ a.button.tinybutton > i {
 }
 
 #page_start {
-  display: flex;
-  justify-content:center;
-  align-items:center;
-  height:80vh;
-  opacity:0;
+	display: flex;
+	justify-content:center;
+	align-items:center;
+	height:80vh;
+	opacity:0;
 }
 
 #page_start_inner {
-  padding:40px 20px 0 20px;
-  width:65%;
-  color:#999;
+	padding:40px 20px 0 20px;
+	width:65%;
+	color:#999;
 }
 
 #page_admin {
-  display:none;
-  margin:10px;
-  padding:10px;
-  background: #303030;
-  border: 1px solid #555;
-  border-radius:16px;
+	display:none;
+	margin:10px;
+	padding:10px;
+	background: #303030;
+	border: 1px solid #555;
+	border-radius:16px;
 
   box-shadow:0px 20px 25px -25px rgb(128,128,128,0.5) inset;
 }
@@ -411,21 +424,21 @@ a.button.tinybutton > i {
 }
 
 #page_receiver {
-  display:none;
-  margin:10px;
-  padding:10px;
-  background: #303030;
-  border: 1px solid #555;
-  border-radius:16px;
+	display:none;
+	margin:10px;
+	padding:10px;
+	background: #303030;
+	border: 1px solid #555;
+	border-radius:16px;
   box-shadow:0px 20px 25px -25px rgb(128,128,128,0.5) inset;
 }
 
 .section {
-  padding:10px 0;
+	padding:10px 0;
 }
 
 .section.line {
-  border-bottom: 1px solid #555;
+	border-bottom: 1px solid #555;
 }
 
 .head-title {
@@ -452,6 +465,13 @@ a.button.tinybutton > i {
   border-bottom:1px solid #555;
 }
 
+#idqr {
+  opacity:0.5;
+}
+
+#idqr:hover {
+  opacity:1;
+}
 .titlenumber {
   font-size:2rem;
   font-weight:bold;
@@ -471,11 +491,11 @@ a.button.tinybutton > i {
   flex-grow:1;
 }
 #div_timer {
-  display:none;
-  justify-content:center;
-  align-items:center;
-  height:40vh;
-  flex-direction:column;
+	display:none;
+	justify-content:center;
+	align-items:center;
+	height:40vh;
+	flex-direction:column;
 }
 
 #div_timer.FS {
@@ -488,16 +508,16 @@ a.button.tinybutton > i {
 }
 
 #div_timer_inner {
-  width:75%;
-  height:auto;
-  margin:10px;
-  padding:10px;
-  background: #303030;
-  border: 1px solid #555;
-  border-radius:16px;
-  background:#eee;
-  color:black;
-  text-align:center;
+	width:75%;
+	height:auto;
+	margin:10px;
+	padding:10px;
+	background: #303030;
+	border: 1px solid #555;
+	border-radius:16px;
+	background:#eee;
+	color:black;
+	text-align:center;
 }
 
 #div_timer_controls_receiver {
@@ -517,8 +537,8 @@ a.button.tinybutton > i {
 }
 
 #timer_display {
-  font-size:3rem;
-  font-weight:bold;
+	font-size:3rem;
+	font-weight:bold;
 }
 
 #timer_display.pause {
@@ -791,14 +811,161 @@ a.button.tinybutton > i {
   bottom:auto;
 }
 
+/*TT styles*/
+
+#page_TT {
+  padding-bottom:12px;
+  box-shadow:0px 20px 25px -25px rgb(128,128,128,0.5) inset;
+}
+
+#TTinputarea0 {
+  background:#ccc;
+  padding:10px 0 20px;
+  border-radius:6px;
+  margin: 10px 0;
+}
+
+.TTinputcount {
+  border-radius:2rem;
+  background:#666;
+  color:white;
+  text-align:center;
+  padding-top:1.5px;
+  font-weight:bold;
+  height:26px;
+  width:26px;
+  letter-spacing: -0.5px;
+  font-size:1rem;
+}
+
+.TTrow {
+  display:flex;
+  align-items: center;
+  border-bottom: 1px solid #999;
+  color:black;
+  background:#ccc;
+}
+
+.TTrow.active {
+
+}
+
+.firstrow {
+  font-weight:bold;
+  padding:4px;
+}
+
+.TTcol1 {
+  flex-basis: 40px;
+  height:32px;
+  padding:0 4px;
+  border-right:1px solid #999;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.TTcol2 {
+  line-height:32px;
+  flex-basis: 22%;
+  padding:0 4px;
+  border-right:1px solid #999;
+}
+
+.TTinputselect {
+  border:0;
+  color:black;
+  background:#ccc;
+  height:30px;
+  width:100%;
+  appearance:none;
+}
+
+.TTcol3 {
+  line-height:32px;
+  flex-basis: 52%;
+  padding: 0 4px;
+  border-right:1px solid #999;
+  
+}
+
+.TTcol4 {
+  line-height:32px;
+  flex-basis: 23%;
+  padding: 0 4px;
+  position:relative;
+  top:1px;
+  font-size:1.1rem;
+}
+
+.TTinputname {
+  width:100%;
+  background: #ccc;
+  border:0;
+  text-align:left;
+  color:black;
+  height:30px;
+}
+
+.TTcirclebutton {
+  cursor:pointer;
+  color:#999;
+}
+
+.TTcirclebutton:hover {
+  color:black;
+}
+
+#TTinputarea0.inverse {
+  background: transparent;
+  color:#eee;
+}
+#TTinputarea0.inverse .firstrow {
+  border-bottom-color:transparent;
+}
+#TTinputarea0.inverse .TTinputcount {
+  background:#333;
+  box-shadow: inset 0 0 1px #ccc;
+}
+#TTinputarea0.inverse .TTrow {
+  background: transparent;
+  color:#eee;
+  border-bottom-color:#666;
+}
+#TTinputarea0.inverse .TTrow.firstrow {
+  border-bottom-color:transparent;
+}
+#TTinputarea0.inverse .TTinputselect, #TTinputarea0.inverse .TTinputname {
+  background:transparent;
+  color:#fff;
+  font-size:1rem;
+}
+#TTinputarea0.inverse .TTrow.active {
+  border-radius:2rem;
+  border-top:1px solid #aaa;
+}
+#TTinputarea0.inverse .TTrow.active .TTinputselect, #TTinputarea0.inverse .TTrow.active .TTinputname {
+  font-weight:bold;
+}
+#TTinputarea0.inverse .TTrow.past {
+  border-bottom-color:transparent;
+  opacity:0.6;
+}
+#TTinputarea0.inverse .TTrow.past .TTinputselect, #TTinputarea0.inverse .TTrow.past .TTinputname {
+  font-style:italic;
+}
+#TTinputarea0.inverse .TTcol1, #TTinputarea0.inverse .TTcol2, #TTinputarea0.inverse .TTcol3 {
+  border-right-color:transparent;
+}
+
 @media (max-width:599px) {
-  #page_start_inner {
-    width:100%;
-    font-size:0.9rem;
-  }
-  h1 {
-    font-size:2.2rem;
-  }
+	#page_start_inner {
+		width:100%;
+		font-size:0.9rem;
+	}
+	h1 {
+		font-size:2.2rem;
+	}
   h1 img {
     width:50px;
   }
@@ -824,5 +991,19 @@ a.button.tinybutton > i {
   }
   .head-left, .head-right {
     flex-basis:50%;
+  }
+  #page_TT {
+    max-width:700px;
+    margin-left:auto;
+    margin-right:auto;
+    box-shadow:none;
+  }
+  #page_admin, #page_receiver, #page_admincontrols {
+    width: min(calc(100% - 20px), 1024px);
+    margin:10px auto;
+  }
+  #div_timer {
+    max-width:900px;
+    margin:0 auto;
   }
 }

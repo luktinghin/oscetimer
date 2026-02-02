@@ -9,6 +9,8 @@ var isFullscreen = false;
 var initiated = false;
 var mode = -1;
 temporal.distance = 0;
+temporal.duration = 0;
+temporal.destination = 0;
 temporal.firstrun = -1;
 temporal.paused = false;
 var users = new Array();
@@ -18,14 +20,21 @@ var online_count = 0;
 var messages = "";
 var self = {};
 var hostid = undefined;
-//import { io } from "socket.io-client";
-const SERVER_URL = "https://oscetimer.app"
-const socket = io(SERVER_URL, {
-    transports: ["websocket"],
-    secure: true
-});
 var label;
 var modal = undefined;
+var timetable = {};
+timetable.inputtimes = new Array();
+timetable.durations = new Array();
+timetable.descriptions = new Array();
+timetable.origin = 0; //timestamp of origin in epoch
+timetable.offset = 0;; //add how many s offset if paused
+timetable.current = 0; //holds the current index
+timetable.active = false;
+timetable.destinations = new Array();
+timetable.prior = -1;
+timetable.TTdist = 0;
+timetableinput = new Array();
+const socket = io();    
 
 if (!navigator.canShare) {
     document.getElementById("sharelinkbutton").style.display="none";
@@ -73,13 +82,12 @@ socket.on("connect", () => {
     console.log("connected to socket server");
     if (!initiated) {
         socket.nickname = "";    
-        initialize();
         loadURL();
     } else {
         console.log("connection re-established");
         if (self.role=="viewer") {
             if (hostid != undefined) {
-                joinRoom(hostid);    
+                joinRoom(hostid.slice(0,3));    
             }
         } else {
             joinRoom();
@@ -124,14 +132,15 @@ socket.on("users", (data) => {
     if (self.role == "host") {
         sender_displayusers();
     } else {
-        check_status(true);
+        check_status();
     }
 })
 
-function joinRoom(roomInput) {
+async function joinRoom(roomInput) {
     if (roomInput == undefined) {
         //this is host
-        roomId = "room-" + self.uid;
+        //verify if room exists
+        roomId = "room-" + self.uid.slice(0,3);
         self.nickname = ""; //need to set to empty because undefined will result in error
     } else {
         roomId = "room-" + roomInput;
@@ -139,14 +148,27 @@ function joinRoom(roomInput) {
     uid = self.uid;
     nickname = self.nickname;
     role = self.role;
-    socket.emit('join', { room: roomId, uid: uid, nickname: nickname, role: role });
-    socket.emit('send data to host', { command: 'JN', hostid: hostid });
     if (self.role == "viewer") {
-        t = setTimeout(function() {
-            request_sync();
+        //verify if room exists
+        result = await queryRoom(roomInput);
+        if (result != "---") {
+            socket.emit('join', { room: roomId, uid: uid, nickname: nickname, role: role });
+            socket.emit('send data to host', { command: 'JN', hostid: hostid });
+            if (result.slice(8) == "TS") {
+                await request_sync();    
+            } else {
+                await request_sync_TT();
+            }
+            
             receiver_poll();
             if (receiver_check == null) periodic_check();
-        }, 1000);
+        } else {
+            displayDialog("Error","<div style='padding:12px'>There is an error connecting to the host. Please verify the host ID code or try again later.</div>");
+            //exit this and restart again
+            document.getElementById("page_receiver_1_button").style.display = "block";
+        }
+    } else {
+        socket.emit('join', { room: roomId, uid: uid, nickname: nickname, role: role });    
     }
 }
 
@@ -155,12 +177,13 @@ socket.on("send host", (data) => {
                         if (data.slice(0,2)=="MS") {
                             tempfrom = data.slice(2,8);
                             tempuserindex = usersMsg.findIndex(user => user.uid == tempfrom);
-        if (tempuserindex == -1) {
-            usersMsg.push({ uid: tempfrom, messages: "" });
-            tempuserindex = usersMsg.length - 1;
-        }
+                            if (tempuserindex == -1) {
+                                usersMsg.push({ uid: tempfrom, messages: "" });
+                                tempuserindex = usersMsg.length - 1;
+                            }
                             tempuserindex2 = users.findIndex(user => user.uid == tempfrom);
                             tempalias = users[tempuserindex2].nickname;
+                            if (tempalias == "") tempalias = "Anonymous";
                             msg = data.slice(8);
                             timestr = formattime(new Date());
                             usersMsg[tempuserindex].messages += `
@@ -172,8 +195,12 @@ socket.on("send host", (data) => {
                                 </div>
                             `;
                             if (modal!=undefined) {
-                                document.querySelector(".chatbox_messages").innerHTML = usersMsg[tempuserindex].messages;    
-                                document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
+                                //update the chatbox for the current sender client only if current sender client is active
+                                tempId = document.querySelector(".chatbox_messages").dataset.uid;
+                                if (tempId == tempfrom) {
+                                    document.querySelector(".chatbox_messages").innerHTML = usersMsg[tempuserindex].messages;    
+                                    document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
+                                }
                             }
                         } else if (data.slice(0,2)=="CM") {
                             tempfrom = data.slice(2,8);
@@ -198,16 +225,30 @@ socket.on("send host", (data) => {
     }
 })
 //client-viewer code
-socket.on("send viewer", (data) => {
+socket.on("send viewer", async (data) => {
     if (self.role == "viewer") {
                         if (data.slice(0,2) == "TS") {
-                            //time stream signal
-                            str = data.slice(2);
-                            temporal.distance = str * 1;
-                            temporal.destination = temporal.distance + Date.now();
-                            if (temporal.paused) temporal.paused = false;
-                            receiver_sync(temporal.distance);
-                            document.getElementById("page_receiver_msg").innerHTML = "Syncing";
+                            //TS signal via server
+                            await request_sync();
+                            //time stream signal - via socket
+                            //str = data.slice(2);
+                            //temporal.distance = str * 1;
+                            //temporal.destination = temporal.distance + Date.now();
+                            //if (temporal.paused) temporal.paused = false;
+                            //receiver_sync(temporal.distance);
+                            //document.getElementById("page_receiver_msg").innerHTML = "Syncing";
+                        } else if (data.slice(0,6) == "TTdist") {
+                            await request_sync_TT();
+                            //obsolete
+                            //str = data.slice(6) * 1;
+                            //if (temporal.paused) temporal.paused = false;
+                            //receiver_sync_TT(str);
+                            //document.getElementById("page_receiver_msg").innerHTML = "Syncing";
+                        } else if (data.slice(0,6) == "TTdata") {
+                            //obsolete
+                            //tempobj = JSON.parse(data.slice(6));
+                            //timetable = {};
+                            //timetable = tempobj;
                         } else if (data.slice(0,2) == "CM") {
                             //command from host
                             receiver_parsecommand(data.slice(2),"host");
@@ -240,179 +281,14 @@ socket.on("send viewer", (data) => {
     }
 })
 
-function initialize() {
-    self.uid = genID();
+async function initialize(len) {
+    self.uid = await genID(len);
     console.log("initiation, self ID " + self.uid);
     document.getElementById("ownID").innerHTML = self.uid;
+    QRgen();
 }
 
-// peerJS
-// deprecated
-/*
-       function initialize() {
-                    // Create own peer object with connection to shared PeerJS server
-                    peer = new Peer("osce-timer-user-" + genID(), {
-                        debug: 2
-                    });
-
-                    peer.on('open', function (id) {
-                        // Workaround for peer.reconnect deleting previous id
-                        if (peer.id === null) {
-                            console.log('Received null id from peer open');
-                            peer.id = lastPeerId;
-                        } else {
-                            lastPeerId = peer.id;
-                        }
-
-                        console.log('ID: ' + peer.id);
-                        document.getElementById("ownID").innerHTML = peer.id.slice(16);
-                        loadURL();
-                        //recvId.innerHTML = "ID: " + peer.id;
-                        //status.innerHTML = "Awaiting connection...";
-                    });
-                    peer.on('connection', function (c) {
-                        c_count = c_count+1;
-                        connections[c_count] = {};
-                        connections[c_count].conn = c;
-                        users[c_count] = {};
-                        users[c_count].id = connections[c_count].conn.peer.slice(16);
-                        users[c_count].messages = "";
-                        console.log("Connected to: " + connections[c_count].conn.peer);
-                        count_string = c_count + 1;
-                        document.getElementById("status").innerHTML = "Host: Connected to " + count_string + " peers";
-                        ready(c_count);
-                    });
-                    peer.on('disconnected', function () {
-                        //status.innerHTML = "Connection lost. Please reconnect";
-                        console.log('Connection lost. Please reconnect');
-
-                        // Workaround for peer.reconnect deleting previous id
-                        peer.id = lastPeerId;
-                        peer._lastServerId = lastPeerId;
-                        peer.reconnect();
-                    });
-                    peer.on('close', function() {
-                        conn = null;
-                        //status.innerHTML = "Connection destroyed. Please refresh";
-                        console.log('Connection destroyed');
-                    });
-                    peer.on('error', function (err) {
-                        console.log(err);
-                        //alert('' + err);
-                    });
-                };
-
-
-                function ready(c_count) {
-                    //admin receives data channel
-                    connections[c_count].conn.on('data', function (data) {
-                        if (data.slice(0,2)=="MS") {
-                            str = data.slice(2);
-                            console.log("Data received from peer " + connections[c_count].conn.peer);
-                            addMessage(str,"Peer #" + c_count);
-                            timestr = formattime(new Date());
-                            if (users[c_count].data != undefined) {
-                                tempalias = users[c_count].data.alias;
-                            } else {
-                                tempalias = users[c_count].id;
-                            }
-                            users[c_count].messages += `
-                                <div class="chatbox_chat_else">
-                                    <div class="chatbox_chat_head">
-                                        <span class="chatbox_author_else">${tempalias}</span>&nbsp;&bull;&nbsp;<span class="timestamp">${timestr}</span>
-                                    </div>
-                                    <div class="chatbox_chat_contents">${str}</div>
-                                </div>
-                            `;
-                            if (modal!=undefined) {
-                                document.querySelector(".chatbox_messages").innerHTML = users[c_count].messages;    
-                                document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
-                            }
-                        } else if (data.slice(0,2)=="CM") {
-                            str = data.slice(2);
-                            receiver_parsecommand(str);
-                        } else if (data.slice(0,2)=="ID") {
-                            //signal used to identify viewer user data
-                            tempData = JSON.parse(data.slice(2));
-                            users[c_count].data = tempData;
-                        }
-                    });
-                    connections[c_count].conn.on('close', function () {
-                        //status.innerHTML = "Connection reset<br>Awaiting connection...";
-                        connections[c_count].conn = null;
-                    });
-                }
-//from send html, this is for receiver of OSCEtimer
-                function join(inputvalue) {
-                    // Close old connection
-                    if (r_conn) {
-                        r_conn.close();
-                    }
-
-                    // Create connection to destination peer specified in the input field
-                    r_conn = peer.connect(inputvalue, {
-                        reliable: true
-                    });
-
-                    r_conn.on('open', function () {
-                        document.getElementById("status").innerHTML = "Listener: connected to host";
-                        console.log("Connected to: " + r_conn.peer.slice(16));
-                        r_conn.send("CMrequestsync");
-                        document.getElementById("page_receiver_msg").innerHTML = "Connected: " + r_conn.peer.slice(16);
-                        periodic_check();
-                        // Check URL params for comamnds that should be sent immediately
-                        //var command = getUrlParam("command");
-                        //if (command)
-                        //    conn.send(command);
-                    });
-                    // Handle incoming data (messages only since this is the signal sender)
-                    r_conn.on('data', function (data) {                        
-                        if (data.slice(0,2) == "TS") {
-                            //time stream signal
-                            str = data.slice(2);
-                            temporal.distance = str * 1;
-                            temporal.destination = temporal.distance + Date.now();
-                            receiver_sync(temporal.distance);
-                            document.getElementById("page_receiver_msg").innerHTML = "Syncing: " + r_conn.peer;
-                            //console.log(temporal);
-                            addMessage("Timer distance is " + converttime(Math.floor(temporal.distance/1000)),"Debug");
-                        } else if (data.slice(0,2) == "CM") {
-                            //command
-                            receiver_parsecommand(data.slice(2));
-                        } else if (data.slice(0,2) == "MS") {
-                            //message
-                            str = data.slice(2);
-                            addMessage(str);    
-                            timestr = formattime(new Date());
-                            messages += `
-                                <div class="chatbox_chat_else">
-                                    <div class="chatbox_chat_head">
-                                        <span class="chatbox_author_else">Host</span>&nbsp;&bull;&nbsp;<span class="timestamp">${timestr}</span>
-                                    </div>
-                                    <div class="chatbox_chat_contents">${str}</div>
-                                </div>
-                            `;
-                            document.getElementById("incomingmessage").innerHTML = str;
-                            if (modal!=undefined) {
-                                document.querySelector(".chatbox_messages").innerHTML = messages;
-                                document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
-                            }
-                        } else if (data.slice(0,2) == "CP") {
-                            str = data.slice(2);
-                            document.getElementById("timer_display").innerText = str;
-                        } else if (data.slice(0,2) == "LB") {
-                            str = data.slice(2);
-                            document.getElementById("div_label_output").innerText = str;
-                        }
-                    });
-                    r_conn.on('close', function () {
-                        addMessage("Connection is lost");
-                    });
-                };
-
-*/
-
-function init(value) {
+async function init(value) {
     requestWakeLock();
     document.getElementById("status").style.display = "block";
     document.getElementById("helpicon").classList.add("transform");
@@ -425,6 +301,7 @@ function init(value) {
         document.getElementById("status").innerHTML = "Host: await connection";
         mode = 0;
         self.role = "host";
+        await initialize(6);
         joinRoom();
     } else {
         document.getElementById("page_receiver").style.display = "block";
@@ -452,16 +329,18 @@ function addMessage(param2,param1) {
     el0.innerHTML = param1 + ": " + param2 + "<br>" + el0.innerHTML;
 }
 
-function init_receiver(arg) {
+async function init_receiver(arg) {
     //get id
     if (arg == undefined) {
         hostid = document.getElementById("senderID").value;    
     } else {
         hostid = arg;
     }
+    await initialize(3);
+    roomid = hostid.slice(0,3);
     self.nickname = document.getElementById("viewerID").value;
     document.getElementById("page_receiver_1_button").style.display = "none";
-    joinRoom(hostid);
+    joinRoom(hostid.slice(0,3));
 }
 
 function periodic_sync() {
@@ -473,15 +352,84 @@ function periodic_sync() {
 }
 
 function display_timer() {
-    temporal.distance = temporal.destination - Date.now();
+    offset = Date.now();
+    temporal.distance = temporal.destination - offset;
     timer_time_in_s = Math.floor(temporal.distance/1000);
     if (timer_time_in_s >= 0) {
         timestring = converttime(timer_time_in_s);
         document.getElementById("timer_display").innerHTML = timestring;
+        y = temporal.distance/temporal.duration*100 + "%";
+        document.getElementById("div_timer_inner").style.backgroundImage = `linear-gradient(to right, #eee ${y}, #fff ${y})`;
+        if (timetable.active) {
+            param0 = timetable.current + 1;
+            param1 = timetable.durations.length;
+            param2 = timetable.descriptions[timetable.current];
+            if (param2.length>0) param2 = " " + param2;
+            document.getElementById("timer_status").innerHTML = `
+                <b>Step ${param0}/${param1}</b><i>${param2}</i>
+                &nbsp;&mdash;&nbsp;
+                <span style='white-space:nowrap'>Countdown is running:</span>
+            `;
+            if (self.role == "host") {
+                document.getElementById("TTinputrow" + timetable.current).style.backgroundImage = `linear-gradient(to right, #13694e ${y}, #444 ${y})`;
+                if (timetable.prior != timetable.current) {
+                    console.log("TT refresh triggered");
+                    if (self.role == "host") {
+                        for (i=0; i<timetableinput.length; i++) {
+                            if (i==timetable.current) {
+                                document.getElementById("TTinputrow" + i).classList.remove('past');
+                                document.getElementById("TTinputrow" + i).classList.remove('future');
+                                document.getElementById("TTinputrow" + i).classList.add('active');
+                            } else if (i<timetable.current) {
+                                document.getElementById("TTinputrow" + i).classList.add('past');
+                                document.getElementById("TTinputrow" + i).classList.remove('future');
+                                document.getElementById("TTinputrow" + i).classList.remove('active');
+                                document.getElementById("TTinputrow" + i).style.backgroundImage = "";                            
+                            } else if (i>timetable.current) {
+                                document.getElementById("TTinputrow" + i).classList.remove('past');
+                                document.getElementById("TTinputrow" + i).classList.add('future');
+                                document.getElementById("TTinputrow" + i).classList.remove('active');
+                                document.getElementById("TTinputrow" + i).style.backgroundImage = "";
+                            }
+                        }
+                    }
+                    timetable.prior = timetable.current;
+                }
+            }
+        }
     } else {
-        timestring = "Admin timer has reached zero.";
-        document.getElementById("timer_display").innerHTML = "Time's up!";
+        //this is when countdown reaches zero
+        //if this is "single" mode, end the timer
+        if (timetable.active == false) {
+            timesup();
+        } else {
+            //move to next and display new timestring
+            timetable.current = timetable.destinations.findIndex((el)=>el>offset);
+            if (timetable.current == -1) {
+                //not found
+                timesup();
+            } else {
+                    console.log("TT advance, to index " + timetable.current);
+                    //find the next destination
+                    temporal.destination = timetable.destinations[timetable.current];
+                    temporal.distance = temporal.destination - offset;
+                    temporal.duration = timetable.durations[timetable.current];
+                    timer_time_in_s = Math.floor(temporal.distance/1000);
+                    timestring = converttime(timer_time_in_s);
+                    document.getElementById("timer_display").innerHTML = timestring;
+            }
+        }
     }
+}
+
+function timesup() {
+            document.getElementById("timer_status").innerHTML = "";
+            document.getElementById("timer_display").innerHTML = "Time's up!";
+            if (isFullscreen) fullscreen(); //reset fullscreen;
+            clearInterval(loop1);
+            clearInterval(loop2);
+            loop1 = null;
+            loop2 = null;
 }
 
 function converttime(relativeclock) {
@@ -498,22 +446,51 @@ function converttime(relativeclock) {
     }
 }
 
-function sender_sync() {
+async function sender_sync() { 
     if (temporal.distance > 0) {
         if (temporal.paused) {
             //do not emit TS signal on pause, from sender
             socket.emit("send viewer", "CMpause");
             socket.emit("send viewer", "CP" + document.getElementById("timer_display").innerText);
         } else {
-            socket.emit("send viewer","TS" + temporal.distance);
+            if (timetable.active) {
+                //modified code, via server
+                //sender_sync_timetable_data();
+                timetable.TTdist = timetable.destinations[timetable.destinations.length-1] - Date.now();
+                await db_sync_write_TT(self.uid);
+                socket.emit("send viewer","TTdist");
+            } else {
+                //modified code, via server
+                await db_sync_write(self.uid,temporal.distance);
+                socket.emit("send viewer","TS");
+            }
+            socket.emit("send viewer", "CMduration" + temporal.duration);
         }
     } 
+}
+
+function sender_sync_timetable_data() {
+    obj = JSON.stringify(timetable);
+    if (initiated) socket.emit("send viewer","TTdata" + obj);
 }
 
 function receiver_sync(distance) {
     self.conn_failure = 0;
     document.getElementById("status").innerHTML = "Viewer: connected to host";
-    start_stopwatch(distance);
+    console.log("receiver sync using TS");
+    if (loop2 == null) start_stopwatch(distance);
+}
+
+function receiver_sync_TT(distance) {
+    self.conn_failure = 0;
+    document.getElementById("status").innerHTML = "Viewer: connected to host";
+    console.log("receiver sync using TT distance");
+    update_timetable(distance);
+    if (timetable.current > -1) {
+        dist2 = timetable.destinations[timetable.current] - Date.now();
+        console.log("current is " + timetable.current + ", distance is " + dist2);
+        if (loop2 == null) start_stopwatch(dist2);
+    }
 }
 
 function receiver_pause() {
@@ -536,15 +513,45 @@ function receiver_parsecommand(param, tempfrom) {
         sender_sync();
         sender_label();
         sender_displayusers();
+    } else if (param.slice(0,8) == "duration") {
+        temporal.duration = param.slice(8) * 1;
     }
 }
 
-function request_sync() {
-    console.log('request to sync sent to host');
-    socket.emit("send data to host", {hostid: hostid, command: "SY"});
+async function request_sync() {
+    console.log('request to sync via server');
+    //old code
+    //socket.emit("send data to host", {hostid: hostid, command: "SY"});
+    //new code
+    TSdist = await db_sync_read(hostid,"TS");
+    console.log(TSdist);
+    if (TSdist > -1) {
+        temporal.distance = TSdist;
+        temporal.destination = temporal.distance + Date.now();
+        if (temporal.paused) temporal.paused = false;
+        receiver_sync(temporal.distance);
+        document.getElementById("page_receiver_msg").innerHTML = "Syncing";
+    }
+}
+  
+
+async function request_sync_TT() {
+    console.log("request to sync timetable via server");
+    tempStr = await db_sync_read(hostid, "TT");
+    try {
+        tempObj = JSON.parse(tempStr);
+        timetable = {};
+        timetable = tempObj;
+        console.log(tempObj);
+        if (temporal.paused) temporal.paused = false;
+        receiver_sync_TT(timetable.TTdist);
+        document.getElementById("page_receiver_msg").innerHTML = "Syncing";
+    } catch (e) {
+        console.log('possible TT string not JSON parsable');
+    }
 }
 
-function loadURL() {
+async function loadURL() {
     //read URL
     const queryString = window.location.search;
     if (queryString == "") {
@@ -565,7 +572,12 @@ function loadURL() {
                 initiated = true;
                 console.log("autoconnect URL " + inputString);
                 hostid = inputString;
-                display_receiverlogin(inputString);
+                result = await queryRoom(inputString.slice(0,3));
+                if (result != "---") {
+                    display_receiverlogin(inputString);    
+                } else {
+                    displayDialog("Error","<div style='padding:12px'>There is an error parsing the session code. Please contact the host for the correct link URL.</div>");
+                }
             }
         }
     }
@@ -587,6 +599,8 @@ function display_receiverlogin(arg) {
     </div>
     `;
     displayDialog("Welcome to CloudTimer.app", tempHTML, true);
+
+
 }
     function validate() {
         tempNick = document.getElementById("viewerID_logon").value;
@@ -651,7 +665,55 @@ function copyfunction(param,is_link) {
         }
 }
 
-function start_stopwatch(distance) {
+function QRfunction(param) {
+    str = "http://cloudtimer.app/?V=" + param;
+    el0 = document.createElement("div");
+    el0.appendChild(QRCode(str));
+    displayDialog("QR Code", "<div style='text-align:center'>" + el0.innerHTML +"</div>");
+}
+
+function QRgen() {
+    newsvg = QRCode({
+        msg:"https://cloudtimer.app/?V=" + self.uid,
+        dim:46,
+        pal:["#ffffff"],
+        pad:0
+    });
+    document.getElementById("idqr").innerHTML = "";
+    document.getElementById("idqr").appendChild(newsvg);
+}
+
+function init_timetable(inputarray, inputdescription) {
+    timetable.active = true;
+    timetable.origin = Date.now();
+    timetable.inputtimes = inputarray;
+    timetable.descriptions = inputdescription;
+    sum = 0;
+    for (i=0; i<timetable.inputtimes.length; i++) {
+        //translate input time into series of distances (not destinations. start_stopwatch will convert distance into destinations)
+        timetable.durations[i] = timetable.inputtimes[i] * 60 * 1000; //(mins to ms)
+        sum += timetable.durations[i];
+        timetable.destinations[i] = timetable.origin + sum;
+    }
+    TTtableswitch(false);
+    start_stopwatch(timetable.durations[0]);
+    temporal.duration = timetable.durations[0];
+}
+
+function update_timetable(dist) {
+    //receives parameter "dist" from the final destination
+    offset = Date.now();
+    //retrospectively fill the destinations from the last, backwards, till current
+    timetable.destinations[timetable.destinations.length-1] = offset + dist;
+    dur_sum = 0;
+    for (i=timetable.destinations.length-1; i>=1; i--) {
+        dur_sum += timetable.durations[i];
+        timetable.destinations[i-1] = offset + dist - dur_sum;
+    }
+    timetable.current = timetable.destinations.findIndex((el)=>el>offset);
+}
+
+async function start_stopwatch(distance) {
     temporal.firstrun = 0;
     document.getElementById("div_timer").style.display = "flex";
     offset = Date.now();
@@ -662,33 +724,44 @@ function start_stopwatch(distance) {
     if (temporal.paused == false) {
         if (distance == undefined) {
             dur = document.getElementById("select_timer").value * 60 * 1000;
+            temporal.duration = dur;
             temporal.destination = dur + offset;
         } else {
             temporal.destination = distance + offset;
         }
         console.log(temporal.destination);
+        
         display_timer();
         clearInterval(loop1);
         clearInterval(loop2);
-        loop1 = setInterval(periodic_sync,15000);
+        if (self.role == "host") loop1 = setInterval(periodic_sync,30000);
         loop2 = setInterval(display_timer,250);
-        if (self.role == "host") {sender_sync()};
     } else {
         pausedur = Date.now() - temporal.pausefrom;
-        temporal.destination = temporal.destination + pausedur;
-        console.log(temporal.destination);
+        //split into two pathways
+        if (timetable.active) {
+            for (i=timetable.current; i<timetable.destinations.length; i++) {
+                timetable.destinations[i] += pausedur;
+            }
+            temporal.duration = timetable.durations[timetable.current];
+            temporal.destination = timetable.destinations[timetable.current];
+            console.log("resume, current: " + timetable.current + "; destinations: " + timetable.destinations);
+        } else {
+            temporal.destination = temporal.destination + pausedur;
+            console.log("resume; destination: " + temporal.destination);
+        }
         display_timer();
         clearInterval(loop1);
         clearInterval(loop2);
-        loop1 = setInterval(periodic_sync,15000);
+        if (self.role == "host") loop1 = setInterval(periodic_sync,30000);
         loop2 = setInterval(display_timer,250);
         temporal.paused = false;
         temporal.pausefrom = 0;
-        if (self.role == "host") {sender_sync()};
     }
     if (mode == 0) {
         document.getElementById("select_timer").disabled = true;
         document.getElementById("startbutton1").style.display = "none";
+        document.getElementById("TTshowbutton").style.display = "none";
         document.getElementById("startbutton2").style.display = "none";
         document.getElementById("pausebutton").style.display = "flex";
         document.getElementById("resetbutton").style.display = "flex";
@@ -702,6 +775,17 @@ function start_stopwatch(distance) {
         document.getElementById("div_label_input").style.display = "none";
         document.getElementById("div_label_output").style.display = "block";
     }
+    //remote sync code
+        if (self.role == "host") {
+            if (timetable.active == false) {
+                x = await db_sync_write(self.uid,temporal.distance);
+                temporal.destination = Date.now() + x;
+            } else {
+                timetable.TTdist = timetable.destinations[timetable.destinations.length-1] - Date.now();
+                await db_sync_write_TT(self.uid);
+            }
+            sender_sync();
+        };
 }
 
 function pause_stopwatch() {
@@ -713,6 +797,8 @@ function pause_action() {
     temporal.pausefrom = Date.now();
     clearInterval(loop1);
     clearInterval(loop2);
+    loop1 = null;
+    loop2 = null;
     document.getElementById("timer_status").innerHTML = "Countdown is PAUSED.";
     document.getElementById("timer_status").classList.add("pause");
     document.getElementById("timer_display").classList.add("pause");
@@ -735,6 +821,8 @@ function reset_action() {
     time = 0;
     clearInterval(loop1);
     clearInterval(loop2);
+    loop1 = null;
+    loop2 = null;
     document.getElementById("timer_status").classList.remove("pause");
     document.getElementById("timer_display").classList.remove("pause");
     document.getElementById("timer_display").innerHTML = "";
@@ -743,11 +831,22 @@ function reset_action() {
         document.getElementById("select_timer").disabled = false;
         document.getElementById("startbutton1").style.display = "flex";
         document.getElementById("startbutton2").style.display = "none";
+        document.getElementById("TTshowbutton").style.display = "flex";
         document.getElementById("pausebutton").style.display = "none";
         document.getElementById("resetbutton").style.display = "none";
         document.getElementById("fullscreenbutton").style.display = "none";
     }
-    if (self.role == "host") {socket.emit("send viewer", "CMreset")};
+    if ((self.role == "host") && (timetable.active == true)) {
+        TTtableswitch(true);
+        TTtranslatedisplay();
+        timetable.current = 0;
+        timetable.prior = -1;
+    }
+    if (isFullscreen) fullscreen(); //reset fullscreen;
+    timetable.active = false;
+    if (self.role == "host") {
+        socket.emit("send viewer", "CMreset");
+    };
 }
 
 function testsend1() {
@@ -804,17 +903,17 @@ function fullscreen() {
 }
 receiver_check = null;
 function periodic_check() {
-    if (receiver_check == null) receiver_check = setInterval(receiver_poll,25000);
+    if (receiver_check == null) receiver_check = setInterval(receiver_poll,30000);
 }
 
-function check_status(param_skip_failure_count) {
+function check_status() {
     tempIndex = users.findIndex(user => user.uid == hostid);
     if (tempIndex>-1) {
         self.conn_failure = 0;
         console.log("found");
         document.getElementById("status").innerHTML = "Viewer: connected to host";
     } else {
-        if (param_skip_failure_count == false) self.conn_failure += 1;
+        self.conn_failure += 1;
         document.getElementById("status").innerHTML = "Viewer: trying to connect";
         if (self.conn_failure == 3) {
             document.getElementById("status").innerHTML = "Viewer: lost connection";
@@ -826,13 +925,20 @@ function check_status(param_skip_failure_count) {
     }
 }
 
-function genID() {
-    //slightly modify
-  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYabcdefghjkmnpqrstuvwxy23456789';
+function genID_obsolete(len) {
+  //len can be 3 or 6. if 3, just gen numbers
+  const characters1 = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const characters2 = '123456789';
   let result = '';
-  const charactersLength = characters.length;
-  for (let i = 0; i < 6; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  const characters1Length = characters1.length;
+  const characters2Length = characters2.length;
+    if (len == 6) {
+      for (let i = 0; i < 3; i++) {
+        result += characters1.charAt(Math.floor(Math.random() * characters1Length));
+      }
+  }
+  for (let i = 0; i < 3; i++) {
+    result += characters2.charAt(Math.floor(Math.random() * characters2Length));
   }
   return result;
 }
@@ -850,13 +956,12 @@ function sender_label() {
 }
 
 function sender_poll() {
-    socket.emit("users list",self.uid);
+    socket.emit("users list",self.uid.slice(0,3));
 }
 
 function receiver_poll() {
-    //grab users list
-    socket.emit("users list",hostid);
-    t = setTimeout(check_status,5000);
+    //grab users list, when receive "users" will fire check_status
+    socket.emit("users list",hostid.slice(0,3));
 }
 
 function sender_displayusers() {
@@ -908,11 +1013,8 @@ function updatereceiverdata() {
 }
 
 function chatbox(paramId) {
-
-
     if (self.role == "host") {
         //check if there's a message list initiated, if not, create a message object for that user
-
         tempIndex2 = users.findIndex(user => user.uid == paramId);
         tempalias = users[tempIndex2].nickname;    
         tempIndex = usersMsg.findIndex(user => user.uid == paramId);
@@ -923,7 +1025,7 @@ function chatbox(paramId) {
         }
         messagelist = usersMsg[tempIndex].messages;    
         tempHTML = `
-            <div class='chatbox_messages'>${messagelist}</div>
+            <div class='chatbox_messages' data-uid='${paramId}'>${messagelist}</div>
             <div class='chatbox_input_outer'>
                 <textarea class='chatbox_input' id='chatbox_input_msg${paramId}'></textarea>
                 <a class='button invert right' id="chatbox_send" onclick='chatbox_sendmsg("${paramId}")'>Send</a>
@@ -1001,4 +1103,95 @@ function formattime(param) {
         MinMin = (param.getMinutes() < 10) ? "0" + param.getMinutes() : param.getMinutes();
         temp = HH + ":" + MinMin;
         return temp;
+}
+
+//HTML methods
+const apiURL = 'https://oscetimer.app/queryroom';
+const apiURL2 = 'https://oscetimer.app/genid';
+const apiURL3 = 'https://oscetimer.app/db_sync_write';
+const apiURL4 = 'https://oscetimer.app/db_sync_read';
+const apiURL5 = 'https://oscetimer.app/db_sync_write_TT';
+const options = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'text/plain'
+    }
+}
+
+async function queryRoom(roomid) {
+    try {
+        text = "room-" + roomid;
+        const response = await fetch(apiURL, {
+            ...options,
+            body: text
+        })
+        const responseData = await response.text(); //alternative, get response.json() for json object
+        console.log(responseData);
+        return responseData;
+    } catch (error) {
+        return -999;
+    }
+}
+
+async function db_sync_write(uidentry,TSdist) {
+    tempStr = uidentry + TSdist;
+    try {
+        const response = await fetch(apiURL3, {
+            ...options,
+            body: tempStr
+        })
+        const responseData = await response.text();
+        return responseData * 1;
+    } catch (error) {
+        return -999;
+    }
+}
+
+async function db_sync_read(uidentry,action) {
+    tempStr = uidentry + action;
+    try {
+        const response = await fetch(apiURL4, {
+            ...options,
+            body: tempStr
+        })
+        const responseData = await response.text();
+        if (action == "TS") {
+            return responseData * 1;    
+        } else if (action == "TT") {
+            return responseData;
+        }
+    } catch (error) {
+        return -999;
+    }
+}
+
+async function db_sync_write_TT(uidentry) {
+    tempStr = uidentry + JSON.stringify(timetable);
+    try {
+        const response = await fetch(apiURL5, {
+            ...options,
+            body: tempStr
+        })
+        const responseData = await response.text();
+        return responseData * 1;
+    } catch (error) {
+        return -999;
+    }
+}
+
+async function genID(len) {
+    tempStr = "0";
+    if (len==3) {
+        tempStr = hostid.slice(0,3);
+    }
+    try {
+        const response = await fetch(apiURL2, {
+            ...options,
+            body: tempStr
+        })
+        const responseData = await response.text();
+        return responseData;
+    } catch (error) {
+        return -999;
+    }
 }
