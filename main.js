@@ -39,6 +39,7 @@ timetable.destinations = new Array();
 timetable.prior = -1;
 timetable.TTdist = 0;
 timetableinput = new Array(); 
+var latency = 0;
 
 if (!navigator.canShare) {
     document.getElementById("sharelinkbutton").style.display="none";
@@ -753,6 +754,7 @@ async function start_stopwatch(distance) {
         //prelim determine distance for the remote sync function first
         if (distance == undefined) {
             temporal.distance = document.getElementById("select_timer").value * 60 * 1000;
+            temporal.duration = temporal.distance;
         } else {
             temporal.distance = distance;
         }
@@ -839,6 +841,7 @@ function reset_action() {
     temporal.paused = false;
     temporal.pausefrom = 0;
     temporal.distance = 0;
+    temporal.duration = 0;
     time = 0;
     clearInterval(loop1);
     clearInterval(loop2);
