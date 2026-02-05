@@ -527,10 +527,12 @@ async function request_sync() {
     //old code
     //socket.emit("send data to host", {hostid: hostid, command: "SY"});
     //new code
+    latency = Date.now();
     TSdist = await db_sync_read(hostid,"TS");
+    latency = Date.now() - latency;
     console.log(TSdist);
     if (TSdist > -1) {
-        temporal.distance = TSdist;
+        temporal.distance = TSdist - latency;
         temporal.destination = temporal.distance + Date.now();
         if (temporal.paused) temporal.paused = false;
         receiver_sync(temporal.distance);
@@ -541,13 +543,16 @@ async function request_sync() {
 
 async function request_sync_TT() {
     console.log("request to sync timetable via server");
+    latency = Date.now();
     tempStr = await db_sync_read(hostid, "TT");
+    latency = Date.now() - latency;
     try {
         tempObj = JSON.parse(tempStr);
         timetable = {};
         timetable = tempObj;
         console.log(tempObj);
         if (temporal.paused) temporal.paused = false;
+        timetable.TTdist -= latency;
         receiver_sync_TT(timetable.TTdist);
         document.getElementById("page_receiver_msg").innerHTML = "Syncing";
     } catch (e) {
@@ -699,6 +704,7 @@ function init_timetable(inputarray, inputdescription) {
         sum += timetable.durations[i];
         timetable.destinations[i] = timetable.origin + sum;
     }
+    timetable.TTdist = sum;
     TTtableswitch(false);
     start_stopwatch(timetable.durations[0]);
     temporal.duration = timetable.durations[0];
@@ -720,48 +726,11 @@ function update_timetable(dist) {
 async function start_stopwatch(distance) {
     temporal.firstrun = 0;
     document.getElementById("div_timer").style.display = "flex";
-    offset = Date.now();
-    console.log(offset);
     document.getElementById("timer_status").innerHTML = "Countdown is running:";
     document.getElementById("timer_status").classList.remove("pause");
     document.getElementById("timer_display").classList.remove("pause");
-    if (temporal.paused == false) {
-        if (distance == undefined) {
-            dur = document.getElementById("select_timer").value * 60 * 1000;
-            temporal.duration = dur;
-            temporal.destination = dur + offset;
-        } else {
-            temporal.destination = distance + offset;
-        }
-        console.log(temporal.destination);
-        
-        display_timer();
-        clearInterval(loop1);
-        clearInterval(loop2);
-        if (self.role == "host") loop1 = setInterval(periodic_sync,30000);
-        loop2 = setInterval(display_timer,250);
-    } else {
-        pausedur = Date.now() - temporal.pausefrom;
-        //split into two pathways
-        if (timetable.active) {
-            for (i=timetable.current; i<timetable.destinations.length; i++) {
-                timetable.destinations[i] += pausedur;
-            }
-            temporal.duration = timetable.durations[timetable.current];
-            temporal.destination = timetable.destinations[timetable.current];
-            console.log("resume, current: " + timetable.current + "; destinations: " + timetable.destinations);
-        } else {
-            temporal.destination = temporal.destination + pausedur;
-            console.log("resume; destination: " + temporal.destination);
-        }
-        display_timer();
-        clearInterval(loop1);
-        clearInterval(loop2);
-        if (self.role == "host") loop1 = setInterval(periodic_sync,30000);
-        loop2 = setInterval(display_timer,250);
-        temporal.paused = false;
-        temporal.pausefrom = 0;
-    }
+
+//visuals
     if (mode == 0) {
         document.getElementById("select_timer").disabled = true;
         document.getElementById("startbutton1").style.display = "none";
@@ -779,13 +748,58 @@ async function start_stopwatch(distance) {
         document.getElementById("div_label_input").style.display = "none";
         document.getElementById("div_label_output").style.display = "block";
     }
+
+    if (temporal.paused == false) {
+        //prelim determine distance for the remote sync function first
+        if (distance == undefined) {
+            temporal.distance = document.getElementById("select_timer").value * 60 * 1000;
+        } else {
+            temporal.distance = distance;
+        }
+        await remote_sync();
+        offset = Date.now();
+        console.log(offset);
+        temporal.destination = temporal.distance + offset;
+        console.log(temporal.destination);
+        display_timer();
+        clearInterval(loop1);
+        clearInterval(loop2);
+        if (self.role == "host") loop1 = setInterval(periodic_sync,30000);
+        loop2 = setInterval(display_timer,250);
+    } else {
+        pausedur = Date.now() - temporal.pausefrom;
+        //split into two pathways
+        if (timetable.active) {
+            for (i=timetable.current; i<timetable.destinations.length; i++) {
+                timetable.destinations[i] += pausedur;
+            }
+            temporal.duration = timetable.durations[timetable.current];
+            temporal.destination = timetable.destinations[timetable.current];
+            timetable.TTdist = timetable.destinations[timetable.destinations.length-1] - Date.now();
+            console.log("resume, current: " + timetable.current + "; destinations: " + timetable.destinations);
+        } else {
+            temporal.destination = temporal.destination + pausedur;
+            temporal.distance = temporal.destination - Date.now();
+            console.log("resume; destination: " + temporal.destination);
+        }
+        temporal.paused = false;
+        temporal.pausefrom = 0;
+        await remote_sync();
+        display_timer();
+        clearInterval(loop1);
+        clearInterval(loop2);
+        if (self.role == "host") loop1 = setInterval(periodic_sync,30000);
+        loop2 = setInterval(display_timer,250);
+    }
+}
+
+async function remote_sync() {
     //remote sync code
+    //first sync to DB then start timer function
         if (self.role == "host") {
             if (timetable.active == false) {
-                x = await db_sync_write(self.uid,temporal.distance);
-                temporal.destination = Date.now() + x;
+                await db_sync_write(self.uid,temporal.distance);
             } else {
-                timetable.TTdist = timetable.destinations[timetable.destinations.length-1] - Date.now();
                 await db_sync_write_TT(self.uid);
             }
             sender_sync();
@@ -811,7 +825,10 @@ function pause_action() {
         document.getElementById("startbutton2").style.display = "flex";
         document.getElementById("pausebutton").style.display = "none";
     }
-    if (self.role == "host") {socket.emit("send viewer", "CMpause")};
+    if (self.role == "host") {
+        socket.emit("send viewer", "CMpause");
+        socket.emit("send viewer", "CP" + document.getElementById("timer_display").innerText);
+    };
 }
 
 function reset_stopwatch() {
