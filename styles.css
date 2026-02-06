@@ -127,8 +127,8 @@ select {
   outline: none;
   vertical-align:bottom;
   border-radius:4px;
-  	color:#fff;
-	background:#222;
+    color:#fff;
+  background:#222;
 }
 
 select:focus {
@@ -366,16 +366,16 @@ a.button.tinybutton > i {
   min-width:0;
 }
 #main-body {
-	color:#eee;
+  color:#eee;
 }
 
 #status {
-	padding:10px;
-	border-bottom: 3px solid #198964;
+  padding:10px;
+  border-bottom: 3px solid #198964;
 }
 
 #page_msg {
-	display:none;
+  display:none;
     height: 100px;
     position: fixed;
     bottom: 0;
@@ -388,26 +388,26 @@ a.button.tinybutton > i {
 }
 
 #page_start {
-	display: flex;
-	justify-content:center;
-	align-items:center;
-	height:80vh;
-	opacity:0;
+  display: flex;
+  justify-content:center;
+  align-items:center;
+  height:80vh;
+  opacity:0;
 }
 
 #page_start_inner {
-	padding:40px 20px 0 20px;
-	width:65%;
-	color:#999;
+  padding:40px 20px 0 20px;
+  width:65%;
+  color:#999;
 }
 
 #page_admin {
-	display:none;
-	margin:10px;
-	padding:10px;
-	background: #303030;
-	border: 1px solid #555;
-	border-radius:16px;
+  display:none;
+  margin:10px;
+  padding:10px;
+  background: #303030;
+  border: 1px solid #555;
+  border-radius:16px;
 
   box-shadow:0px 20px 25px -25px rgb(128,128,128,0.5) inset;
 }
@@ -424,21 +424,21 @@ a.button.tinybutton > i {
 }
 
 #page_receiver {
-	display:none;
-	margin:10px;
-	padding:10px;
-	background: #303030;
-	border: 1px solid #555;
-	border-radius:16px;
+  display:none;
+  margin:10px;
+  padding:10px;
+  background: #303030;
+  border: 1px solid #555;
+  border-radius:16px;
   box-shadow:0px 20px 25px -25px rgb(128,128,128,0.5) inset;
 }
 
 .section {
-	padding:10px 0;
+  padding:10px 0;
 }
 
 .section.line {
-	border-bottom: 1px solid #555;
+  border-bottom: 1px solid #555;
 }
 
 .head-title {
@@ -491,11 +491,11 @@ a.button.tinybutton > i {
   flex-grow:1;
 }
 #div_timer {
-	display:none;
-	justify-content:center;
-	align-items:center;
-	height:40vh;
-	flex-direction:column;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  height:40vh;
+  flex-direction:column;
 }
 
 #div_timer.FS {
@@ -508,16 +508,16 @@ a.button.tinybutton > i {
 }
 
 #div_timer_inner {
-	width:75%;
-	height:auto;
-	margin:10px;
-	padding:10px;
-	background: #303030;
-	border: 1px solid #555;
-	border-radius:16px;
-	background:#eee;
-	color:black;
-	text-align:center;
+  width:75%;
+  height:auto;
+  margin:10px;
+  padding:10px;
+  background: #303030;
+  border: 1px solid #555;
+  border-radius:16px;
+  background:#eee;
+  color:black;
+  text-align:center;
 }
 
 #div_timer_controls_receiver {
@@ -537,8 +537,8 @@ a.button.tinybutton > i {
 }
 
 #timer_display {
-	font-size:3rem;
-	font-weight:bold;
+  font-size:3rem;
+  font-weight:bold;
 }
 
 #timer_display.pause {
@@ -867,7 +867,7 @@ a.button.tinybutton > i {
 
 .TTcol2 {
   line-height:32px;
-  flex-basis: 22%;
+  flex-basis: 100px;
   padding:0 4px;
   border-right:1px solid #999;
 }
@@ -883,15 +883,14 @@ a.button.tinybutton > i {
 
 .TTcol3 {
   line-height:32px;
-  flex-basis: 52%;
+  flex-grow: 1;
   padding: 0 4px;
   border-right:1px solid #999;
-  
 }
 
 .TTcol4 {
   line-height:32px;
-  flex-basis: 23%;
+  flex-basis: 80px;
   padding: 0 4px;
   position:relative;
   top:1px;
@@ -904,7 +903,9 @@ a.button.tinybutton > i {
   border:0;
   text-align:left;
   color:black;
-  height:30px;
+  height:20px;
+  border-radius:0;
+  border-bottom: 1px solid #999;
 }
 
 .TTcirclebutton {
@@ -939,6 +940,10 @@ a.button.tinybutton > i {
   background:transparent;
   color:#fff;
   font-size:1rem;
+  border-bottom:0;
+}
+#TTinputarea0.inverse .TTinputname::placeholder {
+  color: transparent;
 }
 #TTinputarea0.inverse .TTrow.active {
   border-radius:2rem;
@@ -959,13 +964,13 @@ a.button.tinybutton > i {
 }
 
 @media (max-width:599px) {
-	#page_start_inner {
-		width:100%;
-		font-size:0.9rem;
-	}
-	h1 {
-		font-size:2.2rem;
-	}
+  #page_start_inner {
+    width:100%;
+    font-size:0.9rem;
+  }
+  h1 {
+    font-size:2.2rem;
+  }
   h1 img {
     width:50px;
   }
@@ -1005,5 +1010,21 @@ a.button.tinybutton > i {
   #div_timer {
     max-width:900px;
     margin:0 auto;
+  }
+}
+
+.warningborder {
+  animation: pulseredborder 1s infinite;
+}
+
+@keyframes pulseredborder {
+  0% {
+    box-shadow: 0 0 0 0 rgb(0 0 0/0%);
+  }
+  50% {
+    box-shadow: 0 0 10px 5px rgb(237 59 92 /100%);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(0 0 0/0%);
   }
 }

@@ -365,6 +365,12 @@ function display_timer() {
         document.getElementById("timer_display").innerHTML = timestring;
         y = temporal.distance/temporal.duration*100 + "%";
         document.getElementById("div_timer_inner").style.backgroundImage = `linear-gradient(to right, #eee ${y}, #fff ${y})`;
+        //pulse
+        if (timer_time_in_s<10) {
+            if (!document.getElementById("div_timer_inner").classList.contains("warningborder")) document.getElementById("div_timer_inner").classList.add("warningborder");
+        } else {
+            document.getElementById("div_timer_inner").classList.remove("warningborder");
+        }
         if (timetable.active) {
             param0 = timetable.current + 1;
             param1 = timetable.durations.length;
@@ -428,13 +434,14 @@ function display_timer() {
 }
 
 function timesup() {
-            document.getElementById("timer_status").innerHTML = "";
-            document.getElementById("timer_display").innerHTML = "Time's up!";
-            if (isFullscreen) fullscreen(); //reset fullscreen;
-            clearInterval(loop1);
-            clearInterval(loop2);
-            loop1 = null;
-            loop2 = null;
+        document.getElementById("div_timer_inner").classList.remove("warningborder");
+        document.getElementById("timer_status").innerHTML = "";
+        document.getElementById("timer_display").innerHTML = "Time's up!";
+        if (isFullscreen) fullscreen(); //reset fullscreen;
+        clearInterval(loop1);
+        clearInterval(loop2);
+        loop1 = null;
+        loop2 = null;
 }
 
 function converttime(relativeclock) {
@@ -851,6 +858,7 @@ function reset_action() {
     document.getElementById("timer_display").classList.remove("pause");
     document.getElementById("timer_display").innerHTML = "";
     document.getElementById("timer_status").innerHTML = "Countdown is stopped.";   
+    document.getElementById("div_timer_inner").classList.remove("warningborder");
     if (mode == 0) {
         document.getElementById("select_timer").disabled = false;
         document.getElementById("startbutton1").style.display = "flex";
@@ -939,7 +947,7 @@ function check_status() {
     } else {
         self.conn_failure += 1;
         document.getElementById("status").innerHTML = "Viewer: trying to connect";
-        if (self.conn_failure == 3) {
+        if (self.conn_failure == 5) {
             document.getElementById("status").innerHTML = "Viewer: lost connection";
             document.getElementById("page_receiver_msg").innerHTML = "Disconnected";
             receiver_reset();
