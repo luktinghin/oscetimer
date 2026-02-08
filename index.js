@@ -81,14 +81,51 @@ function TTrowtemplate(param) {
 				</select>
 			</div>
 			<div class="TTcol3">
-				<input id="TTinputname${param}" class="TTinputname reduced">
+				<input id="TTinputname${param}" class="TTinputname reduced" placeholder="Describe this step...">
 			</div>
 			<div class="TTcol4">
 					<a class="TTcirclebutton" id="TTbtnup${param}" onclick="TTup(${param})"><i class="fas fa-chevron-circle-up"></i></a>
 					<a class="TTcirclebutton" id="TTbtndownb${param}" onclick="TTdown(${param})"><i class="fas fa-chevron-circle-down"></i></a>
 					<a class="TTcirclebutton" id="TTbtndel${param}" onclick="TTdelete(${param})"><i class="fas fa-times-circle"></i></a>
+			</div>	`
+}
+
+function TTviewertoggle() {
+	tempstate = document.getElementById("page_receiver_timetable_inner").classList.contains("show");
+	if (tempstate) {
+		//hides the timetable
+		document.getElementById("page_receiver_timetable_inner").classList.remove("show");
+		document.getElementById("TTviewerbtn").innerHTML = "Show schedule";
+	} else {
+		//refreshes the timetable display
+		TTviewerdisplay();
+		//shows the timetable
+		document.getElementById("page_receiver_timetable_inner").classList.add("show");
+		document.getElementById("TTviewerbtn").innerHTML = "Hide schedule";
+	}
+}
+
+function TTviewerrender() {
+	//returns HTML 
+	rows = "";
+	for (cc=0;cc<timetable.durations.length;cc++) {
+		count = cc+1;
+		dur = timetable.durations[cc] / 60 / 1000;
+		desc = timetable.descriptions[cc];
+		rows += `
+			<div class="TTviewerrow" id="TTviewerrow${count}">
+				<div class="TTviewercol1"><div class="TTviewercount">${count}</div></div>
+				<div class="TTviewercol2">${dur}min</div>
+				<div class="TTviewercol3">${desc}</div>
 			</div>
-	`
+		`;
+	};
+	return rows;
+}
+
+function TTviewerdisplay() {
+	tempHTML = TTviewerrender();
+	document.getElementById("page_receiver_timetable_inner").innerHTML = tempHTML;
 }
 
 function TTaddnewplaceholder() {
@@ -281,6 +318,5 @@ function TTgo() {
 		array1[i] = timetableinput[i][0];
 		array2[i] = timetableinput[i][1];
 	}
-	sender_sync_timetable_data();
 	init_timetable(array1,array2);
 }

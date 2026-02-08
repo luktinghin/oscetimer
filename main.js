@@ -105,13 +105,17 @@ socket.on("connect", () => {
 //client code
 socket.on('disconnect', () => {
     if (self.role == "viewer") {
-            document.getElementById("status").innerHTML = "Viewer: lost connection";
-            document.getElementById("page_receiver_msg").innerHTML = "Disconnected";
-            document.getElementById("timer_status").innerHTML = "Please wait...";  
-            receiver_reset();
-            displayDialog("Disconnection","<div style='padding:15px'>Viewer is disconnected. If the connection is re-established, the viewer app will automatically reconnect and synchronize.</div>");
-            clearInterval(receiver_check);
-            receiver_check = null;
+        setTimeout(function() {
+            if (navigator.onLine == false) {
+                document.getElementById("status").innerHTML = "Viewer: lost connection";
+                document.getElementById("page_receiver_msg").innerHTML = "Disconnected";
+                document.getElementById("timer_status").innerHTML = "Please wait...";  
+                receiver_reset();
+                displayDialog("Disconnection","<div style='padding:15px'>Viewer is disconnected. If the connection is re-established, the viewer app will automatically reconnect and synchronize.</div>");
+                clearInterval(receiver_check);
+                receiver_check = null;                
+            }
+        }, 30000);//30s delay
     }
 })
 
@@ -160,9 +164,9 @@ async function joinRoom(roomInput) {
             socket.emit('join', { room: roomId, uid: uid, nickname: nickname, role: role });
             socket.emit('send data to host', { command: 'JN', hostid: hostid });
             if (result.slice(8) == "TS") {
-                await request_sync();    
+                await request_sync(true); //flag force client is true   
             } else {
-                await request_sync_TT();
+                await request_sync_TT(true);
             }
             receiver_poll();
             socket.emit("send data to host", {hostid: hostid, command: "SY"});
@@ -234,7 +238,12 @@ socket.on("send viewer", async (data) => {
     if (self.role == "viewer") {
                         if (data.slice(0,2) == "TS") {
                             //TS signal via server
-                            await request_sync();
+                            //differentiate force client sync timer function or not
+                            if (data.slice(2) == "force") {
+                                await request_sync(true);    
+                            } else {
+                                await request_sync(false);
+                            }
                             //time stream signal - via socket
                             //str = data.slice(2);
                             //temporal.distance = str * 1;
@@ -243,7 +252,11 @@ socket.on("send viewer", async (data) => {
                             //receiver_sync(temporal.distance);
                             //document.getElementById("page_receiver_msg").innerHTML = "Syncing";
                         } else if (data.slice(0,6) == "TTdist") {
-                            await request_sync_TT();
+                            if (data.slice(6) == "force") {
+                                await request_sync_TT(true);    
+                            } else {
+                                await request_sync_TT(false);
+                            }
                             //obsolete
                             //str = data.slice(6) * 1;
                             //if (temporal.paused) temporal.paused = false;
@@ -458,7 +471,8 @@ function converttime(relativeclock) {
     }
 }
 
-async function sender_sync() { 
+async function sender_sync(force) { 
+    //force is a Boolean. it ensures rewriting of client timer.
     if (temporal.distance > 0) {
         if (temporal.paused) {
             //do not emit TS signal on pause, from sender
@@ -470,30 +484,44 @@ async function sender_sync() {
                 //sender_sync_timetable_data();
                 timetable.TTdist = timetable.destinations[timetable.destinations.length-1] - Date.now();
                 await db_sync_write_TT(self.uid);
-                socket.emit("send viewer","TTdist");
+                if (force) {
+                    socket.emit("send viewer","TTdistforce");    
+                } else {
+                    socket.emit("send viewer","TTdist");    
+                }
             } else {
                 //modified code, via server
                 await db_sync_write(self.uid,temporal.distance);
-                socket.emit("send viewer","TS");
+                if (force) {
+                    socket.emit("send viewer","TSforce");    
+                } else {
+                    socket.emit("send viewer","TS");
+                }
+                
             }
             socket.emit("send viewer", "CMduration" + temporal.duration);
         }
     } 
 }
 
+/*obsolete
 function sender_sync_timetable_data() {
     obj = JSON.stringify(timetable);
     if (initiated) socket.emit("send viewer","TTdata" + obj);
 }
+*/
 
-function receiver_sync(distance) {
+function receiver_sync(distance,force) {
     self.conn_failure = 0;
     document.getElementById("status").innerHTML = "Viewer: connected to host";
     console.log("receiver sync using TS");
-    if (loop2 == null) start_stopwatch(distance);
+    if ((loop2 == null) || (force==true)) {
+        start_stopwatch(distance);
+        document.getElementById("page_receiver_timetable_outer").style.display = "none";
+    }
 }
 
-function receiver_sync_TT(distance) {
+function receiver_sync_TT(distance,force) {
     self.conn_failure = 0;
     document.getElementById("status").innerHTML = "Viewer: connected to host";
     console.log("receiver sync using TT distance");
@@ -501,7 +529,10 @@ function receiver_sync_TT(distance) {
     if (timetable.current > -1) {
         dist2 = timetable.destinations[timetable.current] - Date.now();
         console.log("current is " + timetable.current + ", distance is " + dist2);
-        if (loop2 == null) start_stopwatch(dist2);
+        if ((loop2 == null) || (force==true)) {
+            start_stopwatch(dist2);
+            document.getElementById("page_receiver_timetable_outer").style.display = "block";
+        }
     }
 }
 
@@ -530,7 +561,7 @@ function receiver_parsecommand(param, tempfrom) {
     }
 }
 
-async function request_sync() {
+async function request_sync(force) {
     console.log('request to sync via server');
     //old code
     //socket.emit("send data to host", {hostid: hostid, command: "SY"});
@@ -543,13 +574,13 @@ async function request_sync() {
         temporal.distance = TSdist - latency;
         temporal.destination = temporal.distance + Date.now();
         if (temporal.paused) temporal.paused = false;
-        receiver_sync(temporal.distance);
+        receiver_sync(temporal.distance,force);
         document.getElementById("page_receiver_msg").innerHTML = "Syncing";
     }
 }
   
 
-async function request_sync_TT() {
+async function request_sync_TT(force) {
     console.log("request to sync timetable via server");
     latency = Date.now();
     tempStr = await db_sync_read(hostid, "TT");
@@ -561,7 +592,7 @@ async function request_sync_TT() {
         console.log(tempObj);
         if (temporal.paused) temporal.paused = false;
         timetable.TTdist -= latency;
-        receiver_sync_TT(timetable.TTdist);
+        receiver_sync_TT(timetable.TTdist,force);
         document.getElementById("page_receiver_msg").innerHTML = "Syncing";
     } catch (e) {
         console.log('possible TT string not JSON parsable');
@@ -700,7 +731,16 @@ function QRgen() {
     document.getElementById("idqr").appendChild(newsvg);
 }
 
+function reset_timetable() {
+    timetable.inputtimes.length = 0;
+    timetable.destinations.length = 0;
+    timetable.durations.length = 0;
+    timetable.descriptions.length = 0;
+    //most importantly, destinations and durations array must be reset to calc "current" accurately
+}
+
 function init_timetable(inputarray, inputdescription) {
+    reset_timetable();
     timetable.active = true;
     timetable.origin = Date.now();
     timetable.inputtimes = inputarray;
@@ -811,7 +851,7 @@ async function remote_sync() {
             } else {
                 await db_sync_write_TT(self.uid);
             }
-            sender_sync();
+            sender_sync(true); //this forces client to reset timer function to correct mode TT/TS
         };
 }
 
@@ -873,6 +913,7 @@ function reset_action() {
         TTtranslatedisplay();
         timetable.current = 0;
         timetable.prior = -1;
+        reset_timetable();
     }
     if (isFullscreen) fullscreen(); //reset fullscreen;
     timetable.active = false;

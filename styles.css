@@ -963,6 +963,66 @@ a.button.tinybutton > i {
   border-right-color:transparent;
 }
 
+/*TT viewer styles*/
+#page_receiver_timetable_outer {
+  display:none;
+}
+
+#page_receiver_timetable_inner {
+  display:none;
+}
+
+#page_receiver_timetable_inner.show {
+  display:block;
+  padding-top:10px;
+}
+
+.TTviewerrow {
+  display:flex;
+  align-items: center;
+  border-bottom: 1px solid #555;
+}
+
+.TTviewerrow:first-child {
+  border-top: 1px solid #555;
+}
+
+.TTviewercol1 {
+  flex-basis:40px;
+  height:32px;
+  padding:0 4px;
+  border-right:1px solid #555;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.TTviewercount {
+  border-radius:2rem;
+  background:#666;
+  color:white;
+  text-align:center;
+  padding-top:1.5px;
+  font-weight:bold;
+  height:26px;
+  width:26px;
+  letter-spacing: -0.5px;
+  font-size:1rem;
+}
+
+.TTviewercol2 {
+  line-height:32px;
+  flex-basis: 100px;
+  padding:0 4px;
+  border-right:1px solid #555;
+}
+
+.TTviewercol3 {
+  line-height:32px;
+  flex-grow: 1;
+  padding: 0 4px;
+}
+
 @media (max-width:599px) {
   #page_start_inner {
     width:100%;
