@@ -531,6 +531,7 @@ function receiver_sync_TT(distance,force) {
         console.log("current is " + timetable.current + ", distance is " + dist2);
         if ((loop2 == null) || (force==true)) {
             start_stopwatch(dist2);
+            TTviewerdisplay(); // refresh display
             document.getElementById("page_receiver_timetable_outer").style.display = "block";
         }
     }
