@@ -4,7 +4,8 @@ function displayAbout() {
 	<div style="padding:10px">
 		<div class="dc-heading">CloudTimer.app</div>
 		<div class="dc-para">
-			Created by Terence Luk & Eric Ng, since 2025.
+			Created by Terence Luk & Eric Ng, since 2025
+			<br>Version 1.0
 		</div>
 		<div class="dc-heading">Instruction manual</div>
 		<div class="dc-subheading">Basics</div>
@@ -31,6 +32,9 @@ function displayAbout() {
 		</div>
 		<div class="dc-subheading">Fullscreen</div>
 		<div class="dc-para">On supported devices, clicking on the "Fullscreen" button will activate the fullscreen mode, which hides other control buttons, to allow bigger timer display.
+		</div>
+		<div class="dc-subheading">User statistics</div>
+		<div class="dc-para">Total sessions created: ${userStat[0]}. Total user count: ${userStat[1]}. Active connections: ${userStat[2]}.
 		</div>
 	</div>
 	`;

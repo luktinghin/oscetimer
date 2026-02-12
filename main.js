@@ -41,6 +41,16 @@ timetable.TTdist = 0;
 timetableinput = new Array(); 
 var latency = 0;
 
+var userStat = new Array;
+
+async function loadStat() {
+    userStat = await userCount();
+};
+
+setTimeout(function() {
+    loadStat();
+},1000);
+
 if (!navigator.canShare) {
     document.getElementById("sharelinkbutton").style.display="none";
 } else {
@@ -450,6 +460,22 @@ function timesup() {
         document.getElementById("div_timer_inner").classList.remove("warningborder");
         document.getElementById("timer_status").innerHTML = "";
         document.getElementById("timer_display").innerHTML = "Time's up!";
+        if (self.role == "host") {
+            document.getElementById("select_timer").disabled = false;
+            document.getElementById("startbutton1").style.display = "flex";
+            document.getElementById("startbutton2").style.display = "none";
+            document.getElementById("TTshowbutton").style.display = "flex";
+            document.getElementById("pausebutton").style.display = "none";
+            document.getElementById("resetbutton").style.display = "none";
+            document.getElementById("fullscreenbutton").style.display = "none";
+        }
+        if ((self.role == "host") && (timetable.active == true)) {
+            TTtableswitch(true);
+            TTtranslatedisplay();
+            timetable.current = 0;
+            timetable.prior = -1;
+            reset_timetable();
+        }
         if (isFullscreen) fullscreen(); //reset fullscreen;
         clearInterval(loop1);
         clearInterval(loop2);
@@ -1179,12 +1205,21 @@ function formattime(param) {
         return temp;
 }
 
+async function userCount() {
+    a = await db_count("rooms");
+    b = await db_count("users");
+    c = await db_count("sockets");
+    console.log("users: " + a + ", rooms: " + b + ", sockets: " + c);
+    return [a,b,c];
+}
+
 //HTML methods
 const apiURL = 'https://oscetimer.app/queryroom';
 const apiURL2 = 'https://oscetimer.app/genid';
 const apiURL3 = 'https://oscetimer.app/db_sync_write';
 const apiURL4 = 'https://oscetimer.app/db_sync_read';
 const apiURL5 = 'https://oscetimer.app/db_sync_write_TT';
+const apiURL6 = 'https://oscetimer.app/db_count';
 const options = {
     method: 'POST',
     headers: {
@@ -1262,6 +1297,19 @@ async function genID(len) {
         const response = await fetch(apiURL2, {
             ...options,
             body: tempStr
+        })
+        const responseData = await response.text();
+        return responseData;
+    } catch (error) {
+        return -999;
+    }
+}
+
+async function db_count(param) {
+    try {
+        const response = await fetch(apiURL6, {
+            ...options,
+            body: param
         })
         const responseData = await response.text();
         return responseData;
