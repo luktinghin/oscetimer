@@ -41,15 +41,21 @@ timetable.TTdist = 0;
 timetableinput = new Array(); 
 var latency = 0;
 
+// --- code block starts here ---
 var userStat = new Array;
+var userCorr = new Array;
 
 async function loadStat() {
     userStat = await userCount();
 };
 
 setTimeout(function() {
-    loadStat();
-},1000);
+loadStat();
+},1500);
+
+setTimeout(function() {
+document.getElementById("helpicon").style.display = "block";
+},3000);
 
 if (!navigator.canShare) {
     document.getElementById("sharelinkbutton").style.display="none";
@@ -225,14 +231,19 @@ socket.on("send host", (data) => {
                             tempfrom = data.slice(2,8);
                             str = data.slice(8);
                             receiver_parsecommand(str, tempfrom);
-                        } else if (data.slice(0,2)=="ID") {
-
-                            //deprecated as user management is handled by server
-                            //signal used to identify viewer user nickname
-                            //tempfrom = data.slice(2,8);
-                            //tempuserindex = users.findIndex(user => user.uid == tempfrom);
-                            //tempalias = data.slice(8);
-                            //users[tempuserindex].nickname = tempalias;
+                        } else if (data.slice(0,2)=="DH") {
+                            //use this for correction code. receives distance data from viewer.
+                            soc = data.slice(2,8);
+                            dis = data.slice(8) * 1;
+                            ind = userCorr.findIndex((el) => el[0] == soc);
+                            if (ind == -1) {
+                                userCorr.push([soc,dis]);
+                                ind = 0;
+                            } else {
+                                userCorr[ind][1] = dis;
+                            }
+                            userCorrHost(ind);
+                            console.log("DH signal: " + soc + " " + dis + " " + ind + " delay by " + userCorr[ind][2]);
                         } else if (data.slice(0,2)=="JN") {
                             //someone joined a room, remote request the host to update
                             sender_poll();
@@ -297,6 +308,12 @@ socket.on("send viewer", async (data) => {
                                 document.querySelector(".chatbox_messages").innerHTML = messages;
                                 document.querySelector(".chatbox_messages").scrollTop = document.querySelector(".chatbox_messages").scrollHeight;
                             }
+                        } else if (data.slice(0,2) == "DV") {
+                            //sync the delay. "DV" = delay to viewer
+                            self.socket_time_2 = Date.now();
+                            self.socket_delay = (self.socket_time_2 - self.socket_time_1)/2;
+                            self.delay = data.slice(2) * 1 + self.socket_delay;
+                            console.log(self.delay);
                         } else if (data.slice(0,2) == "CP") {
                             //pause command, to refresh and mirror display without altering temporal
                             str = data.slice(2);
@@ -349,6 +366,7 @@ async function init(value) {
             document.getElementById("page_receiver_msg").innerHTML = "Attempt to connect: " + hostid;
         }
     }
+    self.delay = 0;
 }
 
 function addMessage(param2,param1) {
@@ -380,7 +398,7 @@ function periodic_sync() {
 }
 
 function display_timer() {
-    offset = Date.now();
+    offset = Date.now() - self.delay;
     temporal.distance = temporal.destination - offset;
     timer_time_in_s = Math.floor(temporal.distance/1000);
     if (timer_time_in_s >= 0) {
@@ -545,6 +563,7 @@ function receiver_sync(distance,force) {
         start_stopwatch(distance);
         document.getElementById("page_receiver_timetable_outer").style.display = "none";
     }
+    userCorrViewer();
 }
 
 function receiver_sync_TT(distance,force) {
@@ -561,6 +580,7 @@ function receiver_sync_TT(distance,force) {
             document.getElementById("page_receiver_timetable_outer").style.display = "block";
         }
     }
+    userCorrViewer();
 }
 
 function receiver_pause() {
@@ -759,6 +779,7 @@ function QRgen() {
 }
 
 function reset_timetable() {
+    timetable.active = false;
     timetable.inputtimes.length = 0;
     timetable.destinations.length = 0;
     timetable.durations.length = 0;
@@ -1211,6 +1232,34 @@ async function userCount() {
     c = await db_count("sockets");
     console.log("users: " + a + ", rooms: " + b + ", sockets: " + c);
     return [a,b,c];
+}
+
+function userCorrHost(index) {
+    selfdis = temporal.destination - Date.now();
+    //fire back the delay
+    userCorr[index][2] = (selfdis - userCorr[index][1]);
+    tempObj = {
+        command: "DV",
+        uid: userCorr[index][0],
+        msg: userCorr[index][2]
+    };
+    socket.emit("send data to viewer",tempObj);
+    console.log("host delay table updated. delays: " + userCorr);
+}
+
+function userCorrViewer() {
+    //delay by 1second before emit
+    setTimeout(function() {
+    self.socket_time_1 = Date.now();
+    str = temporal.destination - Date.now();
+    socket.emit("send data to host",{
+        hostid: hostid,
+        uid: self.uid,
+        command: "DH",
+        msg: str
+    });
+    console.log("userCorr Emitted back to host, " + str);
+    },1000);
 }
 
 //HTML methods
