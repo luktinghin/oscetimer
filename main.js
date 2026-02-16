@@ -255,7 +255,7 @@ socket.on("send host", (data) => {
                             sender_poll();
                             console.log("remote users list refresh triggered, users updated");
                         } else if (data.slice(0,2)=="SY") {
-                            sender_sync();
+                            //sender_sync();
                             sender_label();
                         }
     }
@@ -628,13 +628,13 @@ async function request_sync(force) {
     TSdist = await db_sync_read(hostid,"TS");
     latency = Date.now() - latency;
     console.log(TSdist);
-    if (TSdist > -1) {
+    if (TSdist > 0) {
         temporal.distance = TSdist - latency;
         temporal.destination = temporal.distance + Date.now();
         if (temporal.paused) temporal.paused = false;
         receiver_sync(temporal.distance,force);
-        document.getElementById("page_receiver_msg").innerHTML = "Syncing";
     }
+    document.getElementById("page_receiver_msg").innerHTML = "Syncing";
 }
   
 
@@ -650,7 +650,9 @@ async function request_sync_TT(force) {
         console.log(tempObj);
         if (temporal.paused) temporal.paused = false;
         timetable.TTdist -= latency;
-        receiver_sync_TT(timetable.TTdist,force);
+        if (timetable.TTdist > 0) {
+            receiver_sync_TT(timetable.TTdist,force);            
+        }
         document.getElementById("page_receiver_msg").innerHTML = "Syncing";
     } catch (e) {
         console.log('possible TT string not JSON parsable');
@@ -864,7 +866,7 @@ async function start_stopwatch(distance) {
         } else {
             temporal.distance = distance;
         }
-        await remote_sync();
+        if (self.role == "host") await remote_sync();
         offset = Date.now();
         console.log(offset);
         temporal.destination = temporal.distance + offset;
@@ -892,7 +894,7 @@ async function start_stopwatch(distance) {
         }
         temporal.paused = false;
         temporal.pausefrom = 0;
-        await remote_sync();
+        if (self.role == "host") await remote_sync();
         display_timer();
         clearInterval(loop1);
         clearInterval(loop2);
@@ -943,7 +945,7 @@ function reset_stopwatch() {
     reset_action();
 }
 
-function reset_action() {
+async function reset_action() {
     temporal.paused = false;
     temporal.pausefrom = 0;
     temporal.distance = 0;
@@ -975,9 +977,15 @@ function reset_action() {
         reset_timetable();
     }
     if (isFullscreen) fullscreen(); //reset fullscreen;
-    timetable.active = false;
     if (self.role == "host") {
         socket.emit("send viewer", "CMreset");
+        if (timetable.active) {
+            timetable.TTdist = 0;
+            timetable.active = false;
+            await db_sync_write_TT(self.uid);
+        } else {
+            await db_sync_write(self.uid,0);
+        }
     };
 }
 
