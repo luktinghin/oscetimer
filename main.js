@@ -44,18 +44,24 @@ var latency = 0;
 // --- code block starts here ---
 var userStat = new Array;
 var userCorr = new Array;
+const wait = (ms) => new Promise(resolve => setTimeout(resolve,ms));
 
 async function loadStat() {
-    userStat = await userCount();
+    success = false;
+    attempts = 0;
+    while (!success && attempts < 5) {
+        attempts++;
+        userStat = await userCount();
+        if ((userStat[0]>=0) && (userStat[1]>=0) && (userStat[2]>=0)) {
+            success = true;
+            document.getElementById("helpicon").style.display = "block";
+        } else {
+            await wait(500);
+        }
+    }
 };
 
-setTimeout(function() {
 loadStat();
-},1500);
-
-setTimeout(function() {
-document.getElementById("helpicon").style.display = "block";
-},3000);
 
 if (!navigator.canShare) {
     document.getElementById("sharelinkbutton").style.display="none";
@@ -131,7 +137,7 @@ socket.on('disconnect', () => {
                 clearInterval(receiver_check);
                 receiver_check = null;                
             }
-        }, 30000);//30s delay
+        }, 20000);//20s delay
     }
 })
 
@@ -313,6 +319,9 @@ socket.on("send viewer", async (data) => {
                             self.socket_time_2 = Date.now();
                             self.socket_delay = (self.socket_time_2 - self.socket_time_1)/2;
                             self.delay = data.slice(2) * 1 + self.socket_delay;
+                            //cap max self.delay at 1s
+                            if (self.delay > 1000) self.delay = 1000;
+                            if (self.delay < -1000) self.delay = -1000;
                             console.log(self.delay);
                         } else if (data.slice(0,2) == "CP") {
                             //pause command, to refresh and mirror display without altering temporal
@@ -588,6 +597,8 @@ function receiver_pause() {
 }
 
 function receiver_reset() {
+    clearTimeout(userCorrTimeout);
+    userCorrTimeout = null;
     reset_action();
 }
 
@@ -861,8 +872,8 @@ async function start_stopwatch(distance) {
         display_timer();
         clearInterval(loop1);
         clearInterval(loop2);
-        if (self.role == "host") loop1 = setInterval(periodic_sync,30000);
-        loop2 = setInterval(display_timer,250);
+        if (self.role == "host") loop1 = setInterval(periodic_sync,20000);
+        loop2 = setInterval(display_timer,200);
     } else {
         pausedur = Date.now() - temporal.pausefrom;
         //split into two pathways
@@ -885,8 +896,8 @@ async function start_stopwatch(distance) {
         display_timer();
         clearInterval(loop1);
         clearInterval(loop2);
-        if (self.role == "host") loop1 = setInterval(periodic_sync,30000);
-        loop2 = setInterval(display_timer,250);
+        if (self.role == "host") loop1 = setInterval(periodic_sync,20000);
+        loop2 = setInterval(display_timer,200);
     }
 }
 
@@ -1024,7 +1035,7 @@ function fullscreen() {
 }
 receiver_check = null;
 function periodic_check() {
-    if (receiver_check == null) receiver_check = setInterval(receiver_poll,30000);
+    if (receiver_check == null) receiver_check = setInterval(receiver_poll,20000);
 }
 
 function check_status() {
@@ -1227,11 +1238,14 @@ function formattime(param) {
 }
 
 async function userCount() {
-    a = await db_count("rooms");
-    b = await db_count("users");
-    c = await db_count("sockets");
-    console.log("users: " + a + ", rooms: " + b + ", sockets: " + c);
-    return [a,b,c];
+    aa = await db_count("rooms");
+    bb = await db_count("users");
+    cc = await db_count("sockets");
+    aa *= 1;
+    bb *= 1;
+    cc *= 1;
+    console.log("rooms: " + aa + ", users: " + bb + ", sockets: " + cc);
+    return [aa,bb,cc];
 }
 
 function userCorrHost(index) {
@@ -1247,9 +1261,13 @@ function userCorrHost(index) {
     console.log("host delay table updated. delays: " + userCorr);
 }
 
+userCorrTimeout = null;
+
 function userCorrViewer() {
-    //delay by 1second before emit
-    setTimeout(function() {
+    //delay by 10second before emit
+    clearTimeout(userCorrTimeout);
+    userCorrTimeout = null;
+    userCorrTimeout = setTimeout(function() {
     self.socket_time_1 = Date.now();
     str = temporal.destination - Date.now();
     socket.emit("send data to host",{
@@ -1259,7 +1277,7 @@ function userCorrViewer() {
         msg: str
     });
     console.log("userCorr Emitted back to host, " + str);
-    },1000);
+    },10000);
 }
 
 //HTML methods
