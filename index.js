@@ -1,3 +1,5 @@
+var AO = {};
+
 function displayAbout() {
 	// abbrev : dc = dialog content
 	aboutHTML = `
@@ -323,4 +325,38 @@ function TTgo() {
 		array2[i] = timetableinput[i][1];
 	}
 	init_timetable(array1,array2);
+}
+
+// -- custom analytics object --
+
+AOinit();
+
+async function AOinit() {
+	uuid = localStorage.getItem('uuid');
+	if (uuid) {
+		console.log("uuid found " + uuid);
+		AO.uuid = uuid;
+	} else {
+		uuid = genUUID();
+		localStorage.setItem('uuid',uuid);
+		AO.uuid = uuid;
+		console.log("uuid not found, create: ");
+	}
+	dbresult = await db_AO(AO.uuid,"visit",0);
+	console.log("AO db result: " + dbresult);
+}
+
+async function AOevent(param2, param3) {
+	dbresult = await db_AO(AO.uuid,param2,param3);
+	console.log("AO db result: " + dbresult);
+}
+
+function genUUID() {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890';
+  let result = '';
+  const charactersLength = characters.length;
+      for (let i = 0; i < 8; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      }
+  return result;
 }

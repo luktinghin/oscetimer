@@ -357,6 +357,7 @@ async function init(value) {
         self.role = "host";
         await initialize(6);
         joinRoom();
+        AOevent("login_host",self.uid);
     } else {
         document.getElementById("page_receiver").style.display = "block";
         document.getElementById("page_start").style.display = "none";
@@ -386,16 +387,21 @@ function addMessage(param2,param1) {
 
 async function init_receiver(arg) {
     //get id
+    let viaURL;
     if (arg == undefined) {
-        hostid = document.getElementById("senderID").value;    
+        hostid = document.getElementById("senderID").value;
+        viaURL = "input";
     } else {
         hostid = arg;
+        viaURL = "URL";
     }
     await initialize(3);
     roomid = hostid.slice(0,3);
     self.nickname = document.getElementById("viewerID").value;
     document.getElementById("page_receiver_1_button").style.display = "none";
     joinRoom(hostid.slice(0,3));
+    //fire AO event;
+    AOevent("login_viewer_" + viaURL, self.uid);
 }
 
 function periodic_sync() {
@@ -817,6 +823,9 @@ function init_timetable(inputarray, inputdescription) {
     TTtableswitch(false);
     start_stopwatch(timetable.durations[0]);
     temporal.duration = timetable.durations[0];
+    if (self.role == "host") {
+        AOevent("host_start_timetable",sum/60/1000);
+    }
 }
 
 function update_timetable(dist) {
@@ -874,7 +883,10 @@ async function start_stopwatch(distance) {
         display_timer();
         clearInterval(loop1);
         clearInterval(loop2);
-        if (self.role == "host") loop1 = setInterval(periodic_sync,20000);
+        if (self.role == "host") {
+            loop1 = setInterval(periodic_sync,20000);
+            if (timetable.active == false) AOevent("host_start_single",temporal.duration/60/1000);
+        }
         loop2 = setInterval(display_timer,200);
     } else {
         pausedur = Date.now() - temporal.pausefrom;
@@ -1295,6 +1307,7 @@ const apiURL3 = 'https://oscetimer.app/db_sync_write';
 const apiURL4 = 'https://oscetimer.app/db_sync_read';
 const apiURL5 = 'https://oscetimer.app/db_sync_write_TT';
 const apiURL6 = 'https://oscetimer.app/db_count';
+const apiURL7 = 'https://oscetimer.app/db_ao';
 const options = {
     method: 'POST',
     headers: {
@@ -1385,6 +1398,25 @@ async function db_count(param) {
         const response = await fetch(apiURL6, {
             ...options,
             body: param
+        })
+        const responseData = await response.text();
+        return responseData;
+    } catch (error) {
+        return -999;
+    }
+}
+
+async function db_AO(param1, param2, param3) {
+    const aoobj = {
+        uuid: param1,
+        eventname: param2,
+        eventinfo: param3
+    };
+    aotext = JSON.stringify(aoobj);
+    try {
+        const response = await fetch(apiURL7, {
+            ...options,
+            body: aotext
         })
         const responseData = await response.text();
         return responseData;
