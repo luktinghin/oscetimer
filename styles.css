@@ -337,7 +337,7 @@ a.button.tinybutton > i {
   text-align:center;
   padding-top:11px;
 }
-.iconbutton a.tinybutton, .iconbutton a.tinybutton:hover, .iconbutton a.tinybutton:active {
+.iconbutton a.tinybutton {
   background:transparent;
   border-color:transparent;
   color:#666;
@@ -346,7 +346,7 @@ a.button.tinybutton > i {
   background:#eee;
   color:#666;
 }
-.iconbutton:hover a.tinybutton, .iconbutton:hover a.tinybutton:hover, .iconbutton:hover a.tinybutton:active {
+.iconbutton:hover a.tinybutton {
   background:#555;
   border-color:transparent;
   color:#eee;
