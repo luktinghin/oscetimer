@@ -342,14 +342,16 @@ a.button.tinybutton > i {
   border-color:transparent;
   color:#666;
 }
-.iconbutton:hover .icon {
-  background:#eee;
-  color:#666;
-}
-.iconbutton:hover a.tinybutton {
-  background:#555;
-  border-color:transparent;
-  color:#eee;
+@media (hover: hover) {
+  .iconbutton:hover .icon {
+    background:#eee;
+    color:#666;
+  }
+  .iconbutton:hover a.tinybutton {
+    background:#555;
+    border-color:transparent;
+    color:#eee;
+  }
 }
 
 .startbuttons {
