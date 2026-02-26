@@ -1,5 +1,12 @@
 var AO = {};
 
+//disable sticky hover on iOS
+colIB = document.querySelectorAll(".iconbutton");
+for (colc = 0; colc<colIB.length; colc++) {
+	colIB[colc].addEventListener("touchstart", function(){}, true);
+}
+console.log(colIB.length);
+
 function displayAbout() {
 	// abbrev : dc = dialog content
 	aboutHTML = `
