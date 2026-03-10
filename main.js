@@ -318,7 +318,9 @@ socket.on("send viewer", async (data) => {
                             //sync the delay. "DV" = delay to viewer
                             self.socket_time_2 = Date.now();
                             self.socket_delay = (self.socket_time_2 - self.socket_time_1)/2;
-                            self.delay = data.slice(2) * 1 + self.socket_delay;
+                            tempdelay = data.slice(2) * 1 + self.socket_delay;
+                            self.delays.push(tempdelay);
+                            self.delay = calculate_means_delay();
                             //cap max self.delay at 1s
                             if (self.delay > 1000) self.delay = 1000;
                             if (self.delay < -1000) self.delay = -1000;
@@ -334,6 +336,31 @@ socket.on("send viewer", async (data) => {
                         }
     }
 })
+
+function calculate_means_delay() {
+    len = self.delays.length;
+    if (len == 1) {
+        return self.delays[0];
+    } else if (len <= 10) {
+        cmdsum = 0;
+        for (cmdc = 0; cmdc < len; cmdc++) {
+            cmdsum += self.delays[cmdc];
+        }
+        cmdx = cmdsum/len;
+        return cmdx;
+    } else {
+        cmdsum = 0;
+        start = len - 10; 
+        for (cmdc = start; cmdc < len; cmdc++) {
+            cmdsum += self.delays[cmdc];
+        }
+        cmdx = cmdsum/10;
+        //mutate the array
+        self.delays.splice(0, len-10);
+        return cmdx;
+    }
+    console.log(self.delays);
+}
 
 async function initialize(len) {
     self.uid = await genID(len);
@@ -377,6 +404,7 @@ async function init(value) {
         }
     }
     self.delay = 0;
+    self.delays = new Array();
 }
 
 function addMessage(param2,param1) {
@@ -884,7 +912,7 @@ async function start_stopwatch(distance) {
         clearInterval(loop1);
         clearInterval(loop2);
         if (self.role == "host") {
-            loop1 = setInterval(periodic_sync,20000);
+            loop1 = setInterval(periodic_sync,6000);
             if (timetable.active == false) AOevent("host_start_single",temporal.duration/60/1000);
         }
         loop2 = setInterval(display_timer,200);
@@ -910,7 +938,7 @@ async function start_stopwatch(distance) {
         display_timer();
         clearInterval(loop1);
         clearInterval(loop2);
-        if (self.role == "host") loop1 = setInterval(periodic_sync,20000);
+        if (self.role == "host") loop1 = setInterval(periodic_sync,6000);
         loop2 = setInterval(display_timer,200);
     }
 }
@@ -998,6 +1026,9 @@ async function reset_action() {
         } else {
             await db_sync_write(self.uid,0);
         }
+    } else {
+        self.delay = 0;
+        self.delays.length = 0;
     };
 }
 
@@ -1284,7 +1315,7 @@ function userCorrHost(index) {
 userCorrTimeout = null;
 
 function userCorrViewer() {
-    //delay by 10second before emit
+    //delay by 3second before emit
     clearTimeout(userCorrTimeout);
     userCorrTimeout = null;
     userCorrTimeout = setTimeout(function() {
@@ -1297,7 +1328,7 @@ function userCorrViewer() {
         msg: str
     });
     console.log("userCorr Emitted back to host, " + str);
-    },10000);
+    },3000);
 }
 
 //HTML methods
