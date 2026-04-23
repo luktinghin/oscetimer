@@ -272,9 +272,9 @@ a.button.muted {
 }
 
 a.button.trans {
-  background:transparent;
+  background:#444;
   border-color: rgba(128,128,128);
-  color: rgb(128,128,128);
+  color: white;
 }
 a.button.trans:hover, a.button.trans:active {
   background:#ddd;
@@ -796,7 +796,7 @@ a.button.tinybutton > i {
 
 #helpicon {
   position:absolute;
-  left:calc(50% - 20px);
+  left:20px;
   bottom:20px;
   color:#555;
   width:40px;
@@ -811,6 +811,18 @@ a.button.tinybutton > i {
   font-size:21px;
   left:auto;
   bottom:auto;
+}
+
+#restorebutton {
+  position:absolute;
+  /*left:calc(50% - 20px);*/
+  right:20px;
+  bottom:20px;
+  color:#555;
+  /*width:40px;*/
+  /*text-align:center;*/
+  /*font-size:30px;*/
+  cursor:pointer;
 }
 
 /*TT styles*/

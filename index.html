@@ -81,7 +81,7 @@
 					<div class="section">I want to...</div>
 					<a class="button invert" onclick="init(0)" style="margin-right:0">Create a new timer</a>
 					&nbsp;/&nbsp;
-					<a class="button trans" onclick="init(1)">Join a session</a>
+					<a class="button trans" onclick="init(1)">Join as viewer</a>
 				</div>
 			</div>
 		</div>
@@ -262,6 +262,9 @@
 		</div>
 		<div id="helpicon" style="display:none" onclick="displayAbout();">
 			<i class="fas fa-question-circle"></i>
+		</div>
+		<div id="restorebutton" style="display:none;padding:9px 0;font-size:0.9rem">
+					<a class="button trans" style="" onclick="restorepopup()">Restore previous session</a>
 		</div>
 </body>
 <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>

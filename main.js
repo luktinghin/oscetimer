@@ -19,6 +19,8 @@ var online_count = 0;
 //for self, viewer
 var messages = "";
 var self = {};
+self.delay = 0;
+self.delays = new Array();
 var hostid = undefined;
 const SERVER_URL = "https://oscetimer.app"
 const socket = io(SERVER_URL, {
@@ -42,11 +44,13 @@ timetableinput = new Array();
 var latency = 0;
 
 // --- code block starts here ---
+var aoobj = {};
 var userStat = new Array;
 var userCorr = new Array;
 const wait = (ms) => new Promise(resolve => setTimeout(resolve,ms));
 
-async function loadStat() {
+async function loadapp() {
+    //this loads the stat and the rescue button
     success = false;
     attempts = 0;
     while (!success && attempts < 5) {
@@ -59,9 +63,14 @@ async function loadStat() {
             await wait(500);
         }
     }
+    //display rescue button if necessary
+    lastroom = localStorage.getItem('lastroom');
+    if (lastroom) {
+        document.getElementById("restorebutton").style.display = "block";
+    }
 };
 
-loadStat();
+loadapp();
 
 if (!navigator.canShare) {
     document.getElementById("sharelinkbutton").style.display="none";
@@ -131,13 +140,13 @@ socket.on('disconnect', () => {
             if (navigator.onLine == false) {
                 document.getElementById("status").innerHTML = "Viewer: lost connection";
                 document.getElementById("page_receiver_msg").innerHTML = "Disconnected";
-                document.getElementById("timer_status").innerHTML = "Please wait...";  
-                receiver_reset();
-                displayDialog("Disconnection","<div style='padding:15px'>Viewer is disconnected. If the connection is re-established, the viewer app will automatically reconnect and synchronize.</div>");
-                clearInterval(receiver_check);
-                receiver_check = null;                
+                //document.getElementById("timer_status").innerHTML = "Please wait...";  
+                //receiver_reset();
+                displayDialog("Warning","<div style='padding:15px'>Viewer is disconnected. If there is an active timer, it continues while offline. If the connection is re-established, the viewer app will automatically reconnect and synchronize.</div>");
+                //clearInterval(receiver_check);
+                //receiver_check = null;                
             }
-        }, 20000);//20s delay
+        }, 30000);//30s delay
     }
 })
 
@@ -373,6 +382,7 @@ async function init(value) {
     requestWakeLock();
     document.getElementById("status").style.display = "block";
     document.getElementById("helpicon").classList.add("transform");
+    document.getElementById("restorebutton").style.display = "none";
     if (value == 0) {
         document.getElementById("page_admin").style.display = "block";
         document.getElementById("page_start").style.display = "none";
@@ -385,6 +395,65 @@ async function init(value) {
         await initialize(6);
         joinRoom();
         AOevent("login_host",self.uid);
+    } else if (value == 999) {
+        //rescue code
+        document.getElementById("page_admin").style.display = "block";
+        document.getElementById("page_start").style.display = "none";
+        //document.getElementById("page_msg").style.display = "block";
+        document.getElementById("page_admincontrols").style.display = "block";
+        document.getElementById("div_timer_controls").style.display = "flex";
+        document.getElementById("status").innerHTML = "Host: await connection";
+        mode = 0;
+        self.role = "host";
+        hostid = localStorage.getItem("lastroom");
+        tempnum = await initialize(3);
+        hostid = self.uid;
+        load_data();
+        joinRoom();
+        result = await queryRoom(hostid.slice(0,3));
+        if (result != "---") {
+            if (result.slice(8) == "TS") {
+                latency = Date.now();
+                TSdist = await db_sync_read(hostid,"TS");
+                latency = Date.now() - latency;
+                if (TSdist > 0) {
+                    temporal.distance = TSdist - latency;
+                    temporal.destination = temporal.distance + Date.now();
+                    if (!temporal.paused) {
+                        start_stopwatch(temporal.distance);
+                    }
+                }
+                //visuals
+                document.getElementById("select_timer").value = temporal.duration/60/1000;
+            } else {
+                await request_sync_TT(true);
+                latency = Date.now();
+                tempStr = await db_sync_read(hostid, "TT");
+                latency = Date.now() - latency;
+                try {
+                    tempObj = JSON.parse(tempStr);
+                    timetable = {};
+                    timetable = tempObj;
+                    console.log(tempObj);
+                    if (temporal.paused) temporal.paused = false;
+                    timetable.TTdist -= latency;
+                    update_timetable(timetable.TTdist);
+                    rebuild_timetable_input();
+                    console.log(timetable);
+                    if (timetable.current > -1) {
+                        dist2 = timetable.destinations[timetable.current] - Date.now();
+                        console.log("current is " + timetable.current + ", distance is " + dist2);
+                        start_stopwatch(dist2);
+                    }
+                    document.getElementById("page_receiver_msg").innerHTML = "Syncing";
+                } catch (e) {
+                    console.log('possible TT string not JSON parsable');
+                }
+            }
+        }
+        document.getElementById("label_input").value = label;
+        sender_poll();
+        AOevent("login_host_restore",self.uid);
     } else {
         document.getElementById("page_receiver").style.display = "block";
         document.getElementById("page_start").style.display = "none";
@@ -403,8 +472,22 @@ async function init(value) {
             document.getElementById("page_receiver_msg").innerHTML = "Attempt to connect: " + hostid;
         }
     }
-    self.delay = 0;
-    self.delays = new Array();
+}
+
+function rebuild_timetable_input() {
+    ElRoot = document.getElementById("TTinputarea");
+    ElRoot.innerHTML = "";
+    timetable.inputtimes = new Array();
+    for (ttc = 0; ttc < timetable.durations.length; ttc++) {
+        ElRoot.appendChild(TTinput(ttc));
+        document.getElementById("TTinputname" + ttc).value = timetable.descriptions[ttc];
+        dur = timetable.durations[ttc]/60/1000;
+        document.getElementById("TTinputtime" + ttc).value = dur;
+        timetable.inputtimes[ttc] = dur;
+    }
+    TTtranslate();
+    TTshow();
+    TTtableswitch(false);
 }
 
 function addMessage(param2,param1) {
@@ -607,6 +690,7 @@ function receiver_sync(distance,force) {
         document.getElementById("page_receiver_timetable_outer").style.display = "none";
     }
     userCorrViewer();
+    //timeserver();
 }
 
 function receiver_sync_TT(distance,force) {
@@ -624,6 +708,7 @@ function receiver_sync_TT(distance,force) {
         }
     }
     userCorrViewer();
+    //timeserver();
 }
 
 function receiver_pause() {
@@ -741,8 +826,6 @@ function display_receiverlogin(arg) {
     </div>
     `;
     displayDialog("Welcome to CloudTimer.app", tempHTML, true);
-
-
 }
     function validate() {
         tempNick = document.getElementById("viewerID_logon").value;
@@ -896,7 +979,6 @@ async function start_stopwatch(distance) {
     }
 
     if (temporal.paused == false) {
-        //prelim determine distance for the remote sync function first
         if (distance == undefined) {
             temporal.distance = document.getElementById("select_timer").value * 60 * 1000;
             temporal.duration = temporal.distance;
@@ -948,7 +1030,8 @@ async function remote_sync() {
     //first sync to DB then start timer function
         if (self.role == "host") {
             if (timetable.active == false) {
-                await db_sync_write(self.uid,temporal.distance);
+                msg = await db_sync_write(self.uid,temporal.distance);
+                console.log("return from server: " + msg);
             } else {
                 await db_sync_write_TT(self.uid);
             }
@@ -1098,11 +1181,11 @@ function check_status() {
     } else {
         self.conn_failure += 1;
         document.getElementById("status").innerHTML = "Viewer: trying to connect";
-        if (self.conn_failure == 5) {
-            document.getElementById("status").innerHTML = "Viewer: lost connection";
-            document.getElementById("page_receiver_msg").innerHTML = "Disconnected";
-            receiver_reset();
-            document.getElementById("timer_status").innerHTML = "Please wait...";  
+        if (self.conn_failure >= 10) {
+            document.getElementById("status").innerHTML = "Viewer: host is offline";
+            //document.getElementById("page_receiver_msg").innerHTML = "Disconnected";
+            //receiver_reset();
+            //document.getElementById("timer_status").innerHTML = "Please wait...";  
         }
         console.log("not found");
     }
@@ -1140,6 +1223,7 @@ function sender_label() {
 
 function sender_poll() {
     socket.emit("users list",self.uid.slice(0,3));
+    save_data();
 }
 
 function receiver_poll() {
@@ -1339,6 +1423,7 @@ const apiURL4 = 'https://oscetimer.app/db_sync_read';
 const apiURL5 = 'https://oscetimer.app/db_sync_write_TT';
 const apiURL6 = 'https://oscetimer.app/db_count';
 const apiURL7 = 'https://oscetimer.app/db_ao';
+const apiURL8 = 'https://oscetimer.app/timeserver';
 const options = {
     method: 'POST',
     headers: {
@@ -1438,11 +1523,11 @@ async function db_count(param) {
 }
 
 async function db_AO(param1, param2, param3) {
-    const aoobj = {
-        uuid: param1,
-        eventname: param2,
-        eventinfo: param3
-    };
+    
+        aoobj.uuid = param1;
+        aoobj.eventname = param2;
+        aoobj.eventinfo = param3;
+    
     aotext = JSON.stringify(aoobj);
     try {
         const response = await fetch(apiURL7, {
@@ -1454,4 +1539,65 @@ async function db_AO(param1, param2, param3) {
     } catch (error) {
         return -999;
     }
+}
+
+//problematic
+async function timeserver() {
+    self.self_time1 = Date.now();
+    try {
+        const response = await fetch(apiURL8, {
+            ...options
+        })
+        const responseData = await response.text();
+        console.log(responseData);
+        self.time_delay = responseData - Date.now();
+        console.log(self.time_delay);
+        self.delay = self.time_delay + (Date.now() - self.self_time1)/2;
+        self.delays.push(self.timeserver_delay);
+        console.log(self.delays);
+        return self.delays;
+    } catch (error) {
+        return -999;
+    }
+}
+
+//file functions
+
+function restorepopup() {
+    lastroom = localStorage.getItem("lastroom");
+    lastlabel = localStorage.getItem("lastlabel");
+    tempHTML = `
+    <div style="padding:20px">
+        <div>
+        This function tries to restore the last host session; such as in the event of a disconnection. Proceed only if you intend to do so.
+        Last session recorded was: "${lastroom}", title was "${lastlabel}". </div><div>Click "Restore" below to begin.
+        </div>
+        <div style="text-align:right">
+            <a class="button invert" onclick="init(999);document.getElementById('label_input').value='${lastlabel}';hidemodal('modalDialog')" style="margin-right:0; margin:10px 0">RESTORE</a>
+        </div>
+    </div>
+    `;
+    displayDialog("Restore previous session", tempHTML, false);
+}  
+
+function save_data() {
+    hostObj = {};
+    hostObj.id = self.uid;
+    hostObj.temporal = temporal;
+    hostObj.timetable = timetable;
+    hostObj.usersMsg = usersMsg;
+    hostObj.label = label;
+    str = JSON.stringify(hostObj);
+    localStorage.setItem("lastroom",self.uid.slice(0,3));
+    localStorage.setItem("lastlabel",label);
+    localStorage.setItem("data-" + self.uid.slice(0,3),str);
+}
+
+function load_data() {
+    str = localStorage.getItem("data-" + hostid.slice(0,3));
+    hostObj = JSON.parse(str);
+    temporal = hostObj.temporal;
+    timetable = hostObj.timetable;
+    usersMsg = hostObj.usersMsg;
+    label = hostObj.label;
 }
