@@ -1110,6 +1110,7 @@ async function reset_action() {
             await db_sync_write(self.uid,0);
         }
     } else {
+        timetable.active = false;
         self.delay = 0;
         self.delays.length = 0;
     };
