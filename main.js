@@ -65,7 +65,7 @@ async function loadapp() {
     }
     //display rescue button if necessary
     lastroom = localStorage.getItem('lastroom');
-    if (lastroom) {
+    if (lastroom && mode == -1) {
         document.getElementById("restorebutton").style.display = "block";
     }
 };
@@ -1173,7 +1173,8 @@ function periodic_check() {
 }
 
 function check_status() {
-    tempIndex = users.findIndex(user => user.uid == hostid);
+    tempIndex = users.findIndex(user => user.role == "host");
+    hostid = users[tempIndex].uid;
     if (tempIndex>-1) {
         self.conn_failure = 0;
         console.log("found");
