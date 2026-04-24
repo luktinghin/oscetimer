@@ -1174,8 +1174,8 @@ function periodic_check() {
 
 function check_status() {
     tempIndex = users.findIndex(user => user.role == "host");
-    hostid = users[tempIndex].uid;
     if (tempIndex>-1) {
+        hostid = users[tempIndex].uid;
         self.conn_failure = 0;
         console.log("found");
         document.getElementById("status").innerHTML = "Viewer: connected to host";
